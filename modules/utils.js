@@ -1,7 +1,7 @@
-const db = require('../modules/MongoConnect');
+const db = require('../modules/db/MongoConnect');
 const request = require("request"); // Запросы к сайтам!
 const fs = require('fs');
-const user = require("./ProfileConnect"); // Профили игроков/информация!
+const user = require("./db/ProfileConnect"); // Профили игроков/информация!
 
 let people = [];
 

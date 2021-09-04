@@ -1,9 +1,6 @@
-const db = require('../modules/MongoConnect'),
-    config = require("../config.json");
-const { random } = require('../modules/utils');
+const db = require('../modules/db/MongoConnect');
 /* Default module */
 const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const functions = require('./functions.js');
 const menu = {
     disable_mentions: 1,
     keyboard: JSON.stringify({

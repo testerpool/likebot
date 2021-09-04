@@ -1,5 +1,5 @@
 var cron = require('node-cron');
-const db = require("../MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
+const db = require("../db/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
 const { random } = require("../utils");
 const utils = require("../utils");
 const groups = [165367966, 164711863, 109847065, 33879877, 52695815, 51318460, 61379580, 168009141, 133171419, 165790945, 173987637];

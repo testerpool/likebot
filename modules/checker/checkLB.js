@@ -1,7 +1,8 @@
 const utils = require("../utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const config = require("../../config.json"); // НАСТРОЙКА БОТА!
-const user = require("../ProfileConnect"); // Профили игроков/информация!
-const db = require("../MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
+const config = require("../../config/groups.json"); // НАСТРОЙКА БОТА!
+const user = require("../db/ProfileConnect"); // Профили игроков/информация!
+const db = require("../db/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
+
 
 const request = require('request');
 const { VK, Keyboard } = require('vk-io');

@@ -1,6 +1,6 @@
-/*jslint esversion: 6, evil: true, loopfunc: true */ 
+/*jslint esversion: 6, evil: true, loopfunc: true */
 
-const db = require('../modules/MongoConnect');
+const db = require('./MongoConnect');
 
 module.exports = (collection, id, error) => {
     // console.log(`Смотрю пользователя в "user" в базе данных ${collection}`)
@@ -9,7 +9,7 @@ module.exports = (collection, id, error) => {
         db().collection(collection).findOne({
             vk: id
         }, (error, user) => {
-            if(user==null) return resolve({error:"ERROR BLYAT DEBIL"});
+            if (user == null) return resolve({ error: "ERROR BLYAT DEBIL" });
             resolve(new Proxy(user, {
                 set(_, key, value) {
                     db().collection(collection).updateOne({
