@@ -35,6 +35,15 @@ let next = {
 }
 
 module.exports = {
+    test: async function(vk, cgroup, COLL_NAME) {
+        let people = await vk.api.wall.getReposts({ owner_id: -cgroup, post_id: 369695, count: 100 }).then(function(a) { return a.items });
+        people.forEach(async element => {
+            let userDB = await utils.dataBase(element.from_id, COLL_NAME, vk);
+            user = userDB;
+            user.balance += 100;
+            console.log(user.balance);
+        });
+    },
     stickers: async function(msg, COLL_NAME, vk) {
         let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
         msg.user = userDB;
