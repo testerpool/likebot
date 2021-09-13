@@ -60,6 +60,7 @@ updates.on('message', async(msg, next) => {
     if (!msg.text) return; // Игнор если не текст!
     if (/\[club165367966\|(.*)\]/i.test(msg.text)) msg.text = msg.text.replace(/\[club165367966\|(.*)\]/ig, '').trim(); // group
 
+    msg.user = await utils.dataBase(msg.senderId, COLL_NAME, vk);
 
     /**
      * Если сообщение с "маркет" или "услуги"
@@ -83,9 +84,6 @@ updates.on('message', async(msg, next) => {
     }
 
     if (msg.referralSource && msg.referralValue) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
-
         if (msg.referralSource && msg.referralValue == msg.senderId) return msg.send(`⚠ Вы не можете активировать своё приглашение.`);
         if (msg.user.ref) return msg.send(`⚠ Вы уже активировали приглашение.`);
 
@@ -144,8 +142,7 @@ hearManager.hear(/^(?:(getrepost))$/ig, async(msg) => cmd.test(page, cgroup, COL
 
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     let smsg = ``;
     // utils.updateWidget(tokenWidget, COLL_NAME);
@@ -187,8 +184,7 @@ hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, answer, CO
 
 
 hearManager.hear(/^(?:(secret))/ig, async(msg) => {
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     let smsg = ``;
 
@@ -363,8 +359,7 @@ updates.on(['wall_post_new'], async(obj) => utils.wall_post_new(obj, vk, donate_
 
 
 hearManager.hear(/^(?:[0-9]+)$/i, async(msg) => {
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     if (msg.user.olink === twidmkID) {
         let indexGroup = msg.$match[0];
@@ -396,8 +391,7 @@ hearManager.hear(/^(?:[0-9]+)$/i, async(msg) => {
 
 
 hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     let keybo = {
         disable_mentions: 1,

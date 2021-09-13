@@ -46,8 +46,7 @@ module.exports = {
         });
     },
     stickers: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
         let donate_keybo = {
             keyboard: JSON.stringify({
                 inline: true,
@@ -248,8 +247,7 @@ module.exports = {
         return msg.send(`Как Вам эта фотография? \n ${smsg}`, keybo);
     },
     ready: async function(msg, page, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let showsNow = msg.user.showsNow; // что показывает ему сейчас
         if (showsNow == 0) return msg.send(`Здорово ✅`); // если ничего не показывает
@@ -299,8 +297,7 @@ module.exports = {
         return msg.send(`👀 видим Вашу любовь 💙 \nВыдаём +2 балл Вам 🌟`, next);
     },
     cancel: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let likedPhoto = msg.user.likedPhoto; // получаем с базы массив лайкнутых фото
         let showsNow = msg.user.showsNow; // что показывает ему сейчас
@@ -325,8 +322,7 @@ module.exports = {
         return msg.send(`📥 Вы в очереди под номером: <<${number}>>\n\n Спасибо что Вы с нами ✨`);
     },
     alert: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let keybo = {
             disable_mentions: 1,
@@ -399,8 +395,7 @@ module.exports = {
     },
     open: async function(msg, COLL_NAME, vk) {
         await msg.send(`Проверяю..`);
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let smsg = ``;
         let keybo = {
@@ -468,8 +463,7 @@ module.exports = {
         return msg.send(`Если у тебя возникнут какие-то проблемы ${smsg}`, keybo)
     },
     faq: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let keybo = {
             keyboard: JSON.stringify({
@@ -527,8 +521,7 @@ module.exports = {
         t.olink = report;
     },
     answer: async function(msg, answer, COLL_NAME, vk, vkId, user) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         if (msg.user.permission < 3) return msg.send(`❌ У Вас недостаточно прав`);
         let rid = msg.params_org[0];
@@ -544,19 +537,18 @@ module.exports = {
         return msg.send(`Следующим сообщением укажите текст который хотите отправить пользователю [id${t.vk}|${t.fname}]`)
     },
     updatedb: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
         if (msg.user.permission < 5) return;
         await db().collection(COLL_NAME).updateMany({}, {
             $set: {
                 type_roulette: 1, // тип рулетки, по умолчанию: 1- для всех игроков
+                olink: 0,
             }
         });
         return msg.send(`Значения успешно обновлены/добавлены в базу данных ✅`)
     },
     giveModer: async function(msg, vk, vkId, user, COLL_NAME) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givemoder [ссылка] \n\nПример использования: \n givemoder https://vk.com/id0`)
         let rid = msg.params_org[0];
@@ -574,8 +566,7 @@ module.exports = {
         return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${msg.user.vk}|${msg.user.fname}] назначил Вас Модератором` });
     },
     giveVip: async function(msg, vk, vkId, user, COLL_NAME) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givevip [ссылка] \n\nПример использования: \n givevip https://vk.com/id0`)
         let rid = msg.params_org[0];
@@ -593,8 +584,7 @@ module.exports = {
         // return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${msg.user.vk}|${msg.user.fname}] назначил Вас Модератором` });
     },
     addPhoto: async function(msg, vk, vkId, user, COLL_NAME) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n добавить [ссылка] \n\nПример использования: \n добавить https://vk.com/id0`)
         let rid = msg.params_org[0];

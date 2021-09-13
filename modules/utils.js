@@ -7,6 +7,13 @@ let people = [];
 
 
 module.exports = {
+    /**
+     * Метод авторизации пользователя
+     * @param {any} msg
+     */
+    authUser: function (msg) {
+        
+    },
     senderMessage: function(msg, array, time = 2000) {
         let interval = 0;
         array.forEach(message => {

@@ -31,6 +31,7 @@ const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
 const { regDataBase, vkId, random } = require('../modules/utils');
+const roulette = require('../modules/roulette/roulette');
 
 // Уникальные переменные только для этого файла:
 const COLL_NAME = "users_fb"; // имя коллекции
@@ -55,6 +56,7 @@ updates.on('message', async(msg, next) => {
     if (!msg.text) return; // Игнор если не текст!
     if (/\[club165367966\|(.*)\]/i.test(msg.text)) msg.text = msg.text.replace(/\[club165367966\|(.*)\]/ig, '').trim(); // group
 
+    msg.user = await utils.dataBase(msg.senderId, COLL_NAME, vk);
 
     /**
      * Если сообщение с "маркет" или "услуги"
@@ -78,8 +80,7 @@ updates.on('message', async(msg, next) => {
     }
 
     if (msg.referralSource && msg.referralValue) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         if (msg.referralSource && msg.referralValue == msg.senderId) return msg.send(`⚠ Вы не можете активировать своё приглашение.`);
         if (msg.user.ref) return msg.send(`⚠ Вы уже активировали приглашение.`);
@@ -134,7 +135,7 @@ hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.fu
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(ТЕСТОВЫЙ ПРОКРУТ 🎰|Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => cmd.roulette(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, COLL_NAME, vk));
 
 
 hearManager.hear(/^(?:(Уведомления 🔕|Уведомления 🔔|увед[ао]млени[ея]))$/ig, async(msg) => cmd.alert(msg, COLL_NAME, vk));
@@ -162,8 +163,7 @@ hearManager.hear(/^(?:(🆘 Репорт))$/ig, async(msg) => cmd.report(msg, re
 hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, answer, COLL_NAME, vk, utils.vkId, user));
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     let smsg = ``;
     // utils.updateWidget(tokenWidget, COLL_NAME);
@@ -318,16 +318,14 @@ updates.on(['wall_post_new'], async(obj) => utils.wall_post_new(obj, vk, donate_
 
 
 hearManager.hear(/^(?:[0-9]+)$/i, async(msg) => {
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     return msg.send('Что?');
 });
 
 
 hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
-    let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-    msg.user = t;
+
 
     let keybo = {
         disable_mentions: 1,

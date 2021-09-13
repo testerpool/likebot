@@ -3,8 +3,7 @@ let utils = require('../utils');
 module.exports = {
     spin: async function(msg, COLL_NAME, vk) {
         console.log(msg);
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
         let smsg = ``;
         let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
         let time = msg.user.roulette - Date.now(); // Формула которая считает конец времени VIP
@@ -30,8 +29,7 @@ module.exports = {
 
 
     scenarioWinSimpleRoulette: async function(msg, COLL_NAME, vk) {
-        let userDB = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
+
 
         let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
         let smsg = '';
