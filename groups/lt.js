@@ -5,7 +5,7 @@ process.env.TZ = "Europe/Moscow"; // Часовой пояс, а Выше убр
 /*----------------------------------------------------------------------------------------------------------*/
 /*Подключение бота к сообществу:*/
 /*----------------------------------------------------------------------------------------------------------*/
-const config = require("./config.json"); // НАСТРОЙКА БОТА!
+const config = require("../config/groups.json"); // НАСТРОЙКА БОТА!
 const { VK, Keyboard, MessageContext } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
 
@@ -22,14 +22,13 @@ const hearManager = new HearManager();
 
 /* Default module */
 const { updates } = vk;
-const db = require("./modules/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
-const utils = require("./modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const cmd = require("./modules/cmd"); // Основные команды
-const user = require("./modules/ProfileConnect"); // Профили игроков/информация!
+const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
+const cmd = require("../modules/cmd"); // Основные команды
+const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
 const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
-const { regDataBase, vkId, random } = require('./modules/utils');
+const { regDataBase, vkId, random } = require('../modules/utils');
 
 
 // Уникальные переменные только для этого файла:

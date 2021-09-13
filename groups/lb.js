@@ -5,7 +5,7 @@ process.env.TZ = "Europe/Moscow"; // Часовой пояс, а Выше убр
 /*----------------------------------------------------------------------------------------------------------*/
 /*Подключение бота к сообществу:*/
 /*----------------------------------------------------------------------------------------------------------*/
-const config = require("./config.json"); // НАСТРОЙКА БОТА!
+const config = require("../config/groups.json"); // НАСТРОЙКА БОТА!
 const { VK, Keyboard, MessageContext } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
 
@@ -25,15 +25,14 @@ const hearManager = new HearManager();
 
 /* Default module */
 const { updates } = vk;
-const db = require("./modules/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
-const utils = require("./modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const cmd = require("./modules/cmd"); // Основные команды
-const user = require("./modules/ProfileConnect"); // Профили игроков/информация!
+const roulette = require('../modules/roulette/roulette');
+const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
+const cmd = require("../modules/cmd"); // Основные команды
+const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
 const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
-const { regDataBase, vkId, random } = require('./modules/utils');
-const { stickers } = require("./modules/cmd");
+const { regDataBase, vkId, random } = require('../modules/utils');
 let twidmk = new Object();
 
 // Уникальные переменные только для этого файла:
@@ -119,7 +118,7 @@ updates.on('message', async(msg, next) => {
 });
 
 vk.updates.on('message_new', hearManager.middleware);
-
+console.log(vk.updates);
 /*-------------------------------------------------------------------*/
 /*     |                       
 /*     |                        Команды      
@@ -140,7 +139,9 @@ hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.fu
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(ТЕСТОВЫЙ ПРОКРУТ 🎰|Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => cmd.roulette(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(getrepost))$/ig, async(msg) => cmd.test(page, cgroup, COLL_NAME));
+
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
     let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);

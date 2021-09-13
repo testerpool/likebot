@@ -137,6 +137,7 @@ module.exports = {
 
     },
     poll_vote_new: async function(obj, COLL_NAME, vk, cgroup, page) {
+        return true;
         const smile = ["😱", "😍", "🥰", "😘", "🙉", "😻", "🙀", "🤑", "😜", "🤪", "😏", "🤩", "🤗", "😃", "🥳"]
 
         const { id, userId } = obj;
