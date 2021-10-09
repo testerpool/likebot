@@ -1,6 +1,10 @@
 const db = require('../modules/db/MongoConnect');
+const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
 /* Default module */
 const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
+const { vkId } = utils;
+const data = require('../config/data.json');
+
 const menu = {
     disable_mentions: 1,
     keyboard: JSON.stringify({
@@ -35,18 +39,7 @@ let next = {
 }
 
 module.exports = {
-    test: async function(page, vk, cgroup, COLL_NAME) {
-        let people = await page.api.wall.getReposts({ owner_id: -cgroup, post_id: 376688, count: 100 }).then(function(a) { return a.items });
-        people.forEach(async element => {
-            let userDB = await utils.dataBase(element.from_id, COLL_NAME, vk);
-            user = userDB;
-            user.balance += 100;
-            vk.api.messages.send({ user_id: user.vk, random_id: 0, message: 'Выдаю тебе +1OO баллов за участие в конкурсе 🎉' })
-            console.log(user.balance);
-        });
-    },
-    stickers: async function(msg, COLL_NAME, vk) {
-
+    stickers: async function(msg) {
         let donate_keybo = {
             keyboard: JSON.stringify({
                 inline: true,
@@ -171,7 +164,9 @@ module.exports = {
         }
         return msg.send('👇🏻', next_page)
     },
-    marketPin: function(msg, donate_app) {
+    marketPin: function(msg, group) {
+        const donate_app = data[group].donate_app;
+
         let messages = [
             '🍇 Закреп? Ого! Да ты любишь лайки)',
             'Без проблем, мы ещё сделаем для тебя подарки!',
@@ -184,7 +179,8 @@ module.exports = {
 
         return true;
     },
-    marketApart: function(msg, donate_app) {
+    marketApart: function(msg, group) {
+        const donate_app = data[group].donate_app;
         let messages = [
             '🍇 Отдельный пост? Для сильных и независимых!',
             '👉 Мы сделаем твоё фото отдельным от всех 🌟',
@@ -196,7 +192,8 @@ module.exports = {
 
         return true;
     },
-    marketFirst: function(msg, donate_app) {
+    marketFirst: function(msg, group) {
+        const donate_app = data[group].donate_app;
         let messages = [
             '🍇 Первый в записи? Отличный выбор!',
             'Ведь ты получишь все лайки с поста прямо на фото! 🌟',
@@ -209,7 +206,8 @@ module.exports = {
 
         return true;
     },
-    marketBall: function(msg, donate_app) {
+    marketBall: function(msg, group) {
+        const donate_app = data[group].donate_app;
         let messages = [
             '🍇 Если ты хочешь получить больше баллов..',
             'То ты можешь просто закинуть от 1 до 15 рублей в донаты 💙',
@@ -221,7 +219,10 @@ module.exports = {
 
         return true;
     },
-    changeLikes: async function(msg, COLL_NAME, vk) {
+    changeLikes: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
+
         msg.send('Секундочку..');
         let smsg = ``;
         let database = await utils.getPhoto(msg, COLL_NAME, vk);
@@ -246,8 +247,8 @@ module.exports = {
 
         return msg.send(`Как Вам эта фотография? \n ${smsg}`, keybo);
     },
-    ready: async function(msg, page, COLL_NAME, vk) {
-
+    ready: async function(msg, group) {
+        const page = utils.getVk(group, 'page_token');
 
         let showsNow = msg.user.showsNow; // что показывает ему сейчас
         if (showsNow == 0) return msg.send(`Здорово ✅`); // если ничего не показывает
@@ -278,7 +279,7 @@ module.exports = {
                     if (msg.senderId == z.id) exists = true; // если пользователь найден среди лайкнувших, то меняем переменную "существует" на true
                 })
             }).catch(function(e) {
-                console.log(e)
+                (e)
                 msg.send(`❌ Страница пользователя закрыта, проверить лайк не можем..`); // Если закрыта страничка
                 exists = true;
             })
@@ -296,9 +297,7 @@ module.exports = {
         // Выводим сообщение о успешном окончании работы:
         return msg.send(`👀 видим Вашу любовь 💙 \nВыдаём +2 балл Вам 🌟`, next);
     },
-    cancel: async function(msg, COLL_NAME, vk) {
-
-
+    cancel: async function(msg) {
         let likedPhoto = msg.user.likedPhoto; // получаем с базы массив лайкнутых фото
         let showsNow = msg.user.showsNow; // что показывает ему сейчас
         if (showsNow == 0) return msg.send(`Здорово ✅`); // если ничего не показывает
@@ -310,7 +309,10 @@ module.exports = {
         // Выводим сообщение о успешном окончании работы:
         return msg.send(`👀 Хорошо, мы больше не будем предлагать Вам это фото`, next);
     },
-    turn: async function(msg, cgroup, vk) {
+    turn: async function(msg, group) {
+        const cgroup = data[group].group_id,
+            vk = utils.getVk(group);
+
         msg.send(`👉🏻 Смотрим очередь, секунду..`);
         let user = Number(msg.senderId);
         let [IUser] = await vk.api.users.get({ user_ids: msg.senderId });
@@ -321,9 +323,7 @@ module.exports = {
         if (number === 404) return msg.send(`Вы не в очереди ⚠\n\n 💫 Копите баллы проявляя активность на стене и бот Вас возьмёт 💕`);
         return msg.send(`📥 Вы в очереди под номером: <<${number}>>\n\n Спасибо что Вы с нами ✨`);
     },
-    alert: async function(msg, COLL_NAME, vk) {
-
-
+    alert: async function(msg) {
         let keybo = {
             disable_mentions: 1,
             keyboard: JSON.stringify({
@@ -393,9 +393,9 @@ module.exports = {
 
         return msg.send(`okay`, menu);
     },
-    open: async function(msg, COLL_NAME, vk) {
+    open: async function(msg, group) {
         await msg.send(`Проверяю..`);
-
+        const page = utils.getVk(group, 'page_token');
 
         let smsg = ``;
         let keybo = {
@@ -410,7 +410,7 @@ module.exports = {
             })
         }
 
-        let [IUser] = await vk.api.users.get({ user_ids: msg.senderId });
+        let [IUser] = await page.api.users.get({ user_ids: msg.senderId });
 
         if (IUser.is_closed == true) smsg += `Зачем ты обманываешь? Я же вижу что страница закрыта! \n ❗ ЭТО ВАЖНО ❗\n\n`
         if (IUser.is_closed == false) smsg += `Вижу твой профиль открыт, хорошо 😊\n\n`
@@ -462,9 +462,7 @@ module.exports = {
 
         return msg.send(`Если у тебя возникнут какие-то проблемы ${smsg}`, keybo)
     },
-    faq: async function(msg, COLL_NAME, vk) {
-
-
+    faq: async function(msg) {
         let keybo = {
             keyboard: JSON.stringify({
                 inline: true,
@@ -478,7 +476,10 @@ module.exports = {
         await msg.send(`Количество Ваших баллов: ${msg.user.balance}`);
         return msg.send(`Если вы не нашли ответа на свой вопрос, жмите кнопку ниже \n Администрация Вам поможет!`, keybo)
     },
-    mailing: function(msg, vk, page, cgroup) {
+    mailing: function(msg, group) {
+        const cgroup = data[group].group_id,
+            vk = utils.getVk(group);
+
         if (msg.senderId != 144793398 && msg.senderId != 441380068) return;
         if (!msg.params_org[0]) return msg.send(`Пример использования команды: !mailing 0 [текст] \n где 0 , это ссылка на вложения (фотки, посты). Если их нет, то просто 0`);
         if (!msg.params_org[1]) return msg.send(`укажите фразу которую необходимо отправить!`);
@@ -508,7 +509,7 @@ module.exports = {
             }
         })
     },
-    report: async function(msg, report, COLL_NAME, vk) {
+    report: async function(msg, group) {
         let smsg = ``;
 
         smsg += `‼‼ Следующим сообщением введите Ваше обращение 😺 \n\n`
@@ -517,29 +518,26 @@ module.exports = {
 
         await msg.send(`👻 Вы перешли в раздел тех помощи, связи с Администратором \n\n${smsg}`);
 
-        let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        t.olink = report;
+        let t = await utils.dataBase(msg.senderId, group);
+        t.olink = data["common"].report;
     },
-    answer: async function(msg, answer, COLL_NAME, vk, vkId, user) {
-
-
+    answer: async function(msg, group) {
         if (msg.user.permission < 3) return msg.send(`❌ У Вас недостаточно прав`);
         let rid = msg.params_org[0];
-        let id = await vkId(COLL_NAME, rid, vk),
-            t = await user(COLL_NAME, id);
+        let id = await vkId(rid, group),
+            t = await user(data[group].dataBase, id);
 
         if (!msg.params_org[0]) return msg.answer(`❌ Вы не указали ID человека`);
         if (t.error) return msg.send(`❌ Человек не найден, возможно не зарегистрирован`);
 
-        msg.user.olink = answer;
+        msg.user.olink = data["common"].answer;
         msg.user.answer = t.vk;
 
         return msg.send(`Следующим сообщением укажите текст который хотите отправить пользователю [id${t.vk}|${t.fname}]`)
     },
-    updatedb: async function(msg, COLL_NAME, vk) {
-
+    updatedb: async function(msg, group) {
         if (msg.user.permission < 5) return;
-        await db().collection(COLL_NAME).updateMany({}, {
+        await db().collection(data[group].dataBase).updateMany({}, {
             $set: {
                 type_roulette: 1, // тип рулетки, по умолчанию: 1- для всех игроков
                 olink: 0,
@@ -547,12 +545,13 @@ module.exports = {
         });
         return msg.send(`Значения успешно обновлены/добавлены в базу данных ✅`)
     },
-    giveModer: async function(msg, vk, vkId, user, COLL_NAME) {
-
+    giveModer: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givemoder [ссылка] \n\nПример использования: \n givemoder https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(COLL_NAME, rid, vk),
+        let id = await vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 10) return msg.send(`🕵 Недостаточно прав`);
@@ -565,12 +564,13 @@ module.exports = {
 
         return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${msg.user.vk}|${msg.user.fname}] назначил Вас Модератором` });
     },
-    giveVip: async function(msg, vk, vkId, user, COLL_NAME) {
-
+    giveVip: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givevip [ссылка] \n\nПример использования: \n givevip https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(COLL_NAME, rid, vk),
+        let id = await vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 10) return msg.send(`🕵 Недостаточно прав`);
@@ -581,14 +581,15 @@ module.exports = {
 
         await msg.send(`✅ Вы успешно назначили пользователя [id${t.vk}|${t.fname}] VIP`);
 
-        // return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${msg.user.vk}|${msg.user.fname}] назначил Вас Модератором` });
+        return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${msg.user.vk}|${msg.user.fname}] назначил Вас Модератором` });
     },
-    addPhoto: async function(msg, vk, vkId, user, COLL_NAME) {
-
+    addPhoto: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n добавить [ссылка] \n\nПример использования: \n добавить https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(COLL_NAME, rid, vk),
+        let id = await vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 5) return msg.send(`🕵 Недостаточно прав`);
@@ -602,7 +603,7 @@ module.exports = {
         return msg.send(`✅ Вы успешно добавили [id${t.vk}|${t.fname}] в базу данных фотографий`);
     },
 
-    liketimeOutTurn: function(msg, donate_app) {
+    liketimeOutTurn: function(msg, group) {
         let smsg = ``;
 
         smsg += `выставить любое фото сразу в 3-х наших группах 😻\n\n`
@@ -610,27 +611,21 @@ module.exports = {
         smsg += `🕳 Профиль покупателя должен быть обязательно ОТКРЫТ\n`
         smsg += `🕳 Выставляем любое фото (твоё или друга/подруги) в течении часа после оплаты\n\n`
 
-        smsg += `ПЕРЕХОДИ 👉 ${donate_app}\n`
+        smsg += `ПЕРЕХОДИ 👉 ${data[group].donate_app}\n`
         return msg.send(`Если ты хочешь без очереди попасть на стенку, ты можешь ${smsg}`)
     },
-
-    noHoard: async function(msg, appId, cgroup, COLL_NAME, vk) {
-        let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-
+    noHoard: async function(msg, group) {
         let smsg = ``;
 
-        let keybo = await utils.getDonateKeybo(appId, cgroup);
-        smsg += `ты можешь купить за рубли баллы и накопить ${t.price} баллов быстрее ✅\n`
+        let keybo = await utils.getDonateKeybo(group);
+        smsg += `ты можешь купить за рубли баллы и накопить ${msg.user.price} баллов быстрее ✅\n`
         smsg += `📃 Курс такой: 1₽ = 3O баллов \n\n`
         smsg += `За 1O₽ получишь 3OO баллов сразу же после пополнения 🌟\n\n`
         smsg += `Приложение 👇🏻 \n`;
 
         return msg.send(`Если ты не хочешь лайкать людей ${smsg}`, keybo)
     },
-
-    balance: async function(msg, COLL_NAME, vk) {
-        let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-
+    balance: async function(msg) {
         let smsg = ``;
         let keybo = {
             keyboard: JSON.stringify({
@@ -643,10 +638,10 @@ module.exports = {
             })
         }
 
-        smsg += `${Math.floor(t.balance)} 🌟\n\n`
-        if (t.permission >= 1) smsg += `Также у тебя есть 💎 VIP статус 💎\n\n`
+        smsg += `${Math.floor(msg.user.balance)} 🌟\n\n`
+        if (msg.user.permission >= 1) smsg += `Также у тебя есть 💎 VIP статус 💎\n\n`
         smsg += `❗ Чтобы попасть в ЛТ нужно:\n\n`
-        smsg += `1️⃣ Накопить ${t.price} баллов 💚 \n`
+        smsg += `1️⃣ Накопить ${msg.user.price} баллов 💚 \n`
         smsg += `2️⃣ Открыть свой профиль ВКонтакте 👁‍🗨 \n`
         smsg += `3️⃣ Поставить фото на профиль 👤 \n`
 
@@ -670,9 +665,10 @@ module.exports = {
 
         return msg.send(`💌 Доступные команды: `, menu);
     },
-    referrals: async function(msg, cgroup, COLL_NAME, vk) {
-        let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = t;
+    referrals: async function(msg, group) {
+        const cgroup = data[group].group_id,
+            vk = data[group].group_page;
+
 
         let ref = `https://vk.me/public${cgroup}?ref=${msg.senderId}&ref_source=${msg.senderId}`;
         let refka = await vk.api.utils.getShortLink({ url: ref });
@@ -680,9 +676,8 @@ module.exports = {
         await msg.send(`👥 Вы пригласили людей: ${msg.user.referrals}\n\n 🆕 Каждый приглашенный Вами человек будет приносить Вам баллы за проявленную активность 🆕\n❗ Отправьте ссылку другу/подруге и попросите что-то написать ❗\n\n👣 Ваша реферальная ссылка:`);
         return msg.send(refka.short_url);
     },
-    eval: async function(msg, COLL_NAME, vk) {
-        let t = await utils.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = t;
+    eval: async function(msg, group) {
+        const vk = data[group].group_page;
 
 
         if (msg.senderId != 144793398 && msg.senderId != 441380068) return;
@@ -714,9 +709,12 @@ module.exports = {
             return msg.send(`⏰ Время Выполнения кода: ${end - start} ms`);
         }
     },
-    givebalance: async function(msg, COLL_NAME, vk, vkId, user) {
+    givebalance: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = data[group].group_page;
+
         let rid = msg.params_org[0];
-        let id = await vkId(COLL_NAME, rid, vk),
+        let id = await vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 5) return msg.send(`🕵 Недостаточно прав`);

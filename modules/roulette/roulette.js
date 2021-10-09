@@ -1,14 +1,14 @@
 let utils = require('../utils');
+const data = require('../../config/data.json');
 
 module.exports = {
-    spin: async function(msg, COLL_NAME, vk) {
-        console.log(msg);
+    spin: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
 
         let smsg = ``;
         let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
         let time = msg.user.roulette - Date.now(); // Формула которая считает конец времени VIP
-
-
 
         if (time > 1) return msg.send(`❌ Бесплатно крутить рулетку можно раз в 20 часов 💎\n\n 💦 У [id${msg.user.vk}|Вас] время ещё не прошло \n ⌛ Осталось: ${utils.unixStampLeft(time)}`);
         let { keybo, win } = await utils.randomRoulette();
@@ -28,9 +28,7 @@ module.exports = {
     },
 
 
-    scenarioWinSimpleRoulette: async function(msg, COLL_NAME, vk) {
-
-
+    scenarioWinSimpleRoulette: async function(msg) {
         let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
         let smsg = '';
         // Рандомайзер

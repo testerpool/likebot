@@ -1,29 +1,6 @@
 process.env.TZ = "Europe/Moscow"; // Часовой пояс, а Выше убрать ошибки из консоли!
-
-/* Config module */
-/*----------------------------------------------------------------------------------------------------------*/
-/*Подключение бота к сообществу:*/
-/*----------------------------------------------------------------------------------------------------------*/
-const config = require("../config/groups.json"); // НАСТРОЙКА БОТА!
-const { VK, Keyboard, MessageContext } = require('vk-io');
-const { HearManager } = require('@vk-io/hear');
-
-const cgroup = config.id.fb;
-const vk = new VK({
-    token: config.access_token.fb,
-    lang: "ru",
-    pollingGroupId: cgroup,
-    apiMode: "parallel"
-});
-
-const page = new VK({ token: config.access_token.page_fb });
-
-
-const hearManager = new HearManager();
-
-
 /* Default module */
-const { updates } = vk;
+const roulette = require('../modules/roulette/roulette');
 const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
 const cmd = require("../modules/cmd"); // Основные команды
 const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
@@ -31,18 +8,34 @@ const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
 const { regDataBase, vkId, random } = require('../modules/utils');
-const roulette = require('../modules/roulette/roulette');
-
+let twidmk = new Object();
+const config = require("../config/data.json");
+const { VK, Keyboard, MessageContext } = require('vk-io');
+const { HearManager } = require('@vk-io/hear');
+const hearManager = new HearManager();
+/*----------------------------------------------------------------------------------------------------------*/
+/*Подключение бота к сообществу:*/
+/*----------------------------------------------------------------------------------------------------------*/
 // Уникальные переменные только для этого файла:
-const COLL_NAME = "users_fb"; // имя коллекции
-const donate_app = "vk.com/app6471849_-189152994";
-const donate_app_id = 6471849;
-const tokenWidget = "7aea4b4465796aba399cbe11c5e01a965480698ac7664dab6e5aaf2bf536c604ba92422b7944c62eef14c";
-const report = 404;
-const answer = 405;
+const fb = 'fb';
+const group_name = fb;
+const group_id = config.fb.group_id; // ID группы в которой включен бот
+const vk = new VK({
+    token: config.fb.group_token,
+    lang: "ru",
+    pollingGroupId: group_id,
+    apiMode: "parallel"
+});
 
+const page = new VK({ token: config.fb.page_token });
 
+const COLL_NAME = config.fb.dataBase;
+const donate_app = config.fb.donate_app;
+const donate_app_id = config.fb.donate_app_id;
+const report = config.common.report;
+const answer = config.common.answer;
 
+const { updates } = vk;
 /*----------------------------------------------------------------------------------------------------------*/
 /*Регистрация пользователя:*/
 /*----------------------------------------------------------------------------------------------------------*/
@@ -56,7 +49,7 @@ updates.on('message', async(msg, next) => {
     if (!msg.text) return; // Игнор если не текст!
     if (/\[club165367966\|(.*)\]/i.test(msg.text)) msg.text = msg.text.replace(/\[club165367966\|(.*)\]/ig, '').trim(); // group
 
-    msg.user = await utils.dataBase(msg.senderId, COLL_NAME, vk);
+    msg.user = await utils.dataBase(msg.senderId, group_name);
 
     /**
      * Если сообщение с "маркет" или "услуги"
@@ -86,7 +79,7 @@ updates.on('message', async(msg, next) => {
         if (msg.user.ref) return msg.send(`⚠ Вы уже активировали приглашение.`);
 
         let ui = Number(msg.referralSource);
-        let id = await utils.vkId(COLL_NAME, ui),
+        let id = await utils.vkId(ui, group_name),
             t = await user(COLL_NAME, id);
         if (!t) return msg.send(`⚠ Игрок не найден.`);
 
@@ -108,7 +101,7 @@ updates.on('message', async(msg, next) => {
 
     // if (msg.user.balance < 0 || isNaN(msg.user.balance) || !isFinite(msg.user.balance)) msg.user.balance = 1
 
-    utils.anyTime(msg, COLL_NAME, vk, page, cgroup, donate_app);
+    utils.anyTime(msg, group_name);
 
     await next();
 });
@@ -122,45 +115,45 @@ vk.updates.on('message_new', hearManager.middleware);
 /*-------------------------------------------------------------------*/
 hearManager.hear(/^(начать)$/ig, async(msg) => cmd.start(msg));
 hearManager.hear(/^(Команды 📝|Меню 📝|команды|меню|начать|спасибо|СПАСИБО 🤗)$/ig, async(msg) => cmd.menu(msg));
-hearManager.hear(/^(?:(Баланс 🌟|баланс|мои баллы 🌟))$/ig, async(msg) => cmd.balance(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(Не хочу копить баллы 🌚|ПОПОЛНИТЬ БАЛЛЫ 🌟|ПОПОЛНИТЬ 🌟))$/ig, async(msg) => cmd.noHoard(msg, donate_app_id, cgroup, COLL_NAME, vk));
-hearManager.hear(/^(?:(лт без очереди 💙|лт|без очереди))$/ig, async(msg) => cmd.liketimeOutTurn(msg, donate_app, cgroup));
-hearManager.hear(/^(?:(реферал|реф|рефка|Реферал 👣))$/ig, async(msg) => cmd.referrals(msg, cgroup, COLL_NAME, vk));
+hearManager.hear(/^(?:(Баланс 🌟|баланс|мои баллы 🌟))$/ig, async(msg) => cmd.balance(msg, group_name));
+hearManager.hear(/^(?:(Не хочу копить баллы 🌚|ПОПОЛНИТЬ БАЛЛЫ 🌟|ПОПОЛНИТЬ 🌟))$/ig, async(msg) => cmd.noHoard(msg, group_name));
+hearManager.hear(/^(?:(лт без очереди 💙|лт|без очереди))$/ig, async(msg) => cmd.liketimeOutTurn(msg, group_name));
+hearManager.hear(/^(?:(реферал|реф|рефка|Реферал 👣))$/ig, async(msg) => cmd.referrals(msg, group_name));
 // Информация:
 hearManager.hear(/^(?:(ХОЧУ В ЛТ 😍|info|как|информ[ао]ция|давай 👀))$/ig, async(msg) => cmd.info(msg));
 hearManager.hear(/^(?:(да 💙|д[оа]))$/ig, async(msg) => cmd.yes(msg));
 hearManager.hear(/^(?:(нет 💔|нет))$/ig, async(msg) => cmd.no(msg));
-hearManager.hear(/^(?:(открыто ✅|[ао]ткр[иы]т[ао]))$/ig, async(msg) => cmd.open(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(открыто ✅|[ао]ткр[иы]т[ао]))$/ig, async(msg) => cmd.open(msg, group_name));
 hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.further(msg));
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
-hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
 
 
-hearManager.hear(/^(?:(Уведомления 🔕|Уведомления 🔔|увед[ао]млени[ея]))$/ig, async(msg) => cmd.alert(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(Уведомления 🔕|Уведомления 🔔|увед[ао]млени[ея]))$/ig, async(msg) => cmd.alert(msg));
 // Проверить очередь                      
-hearManager.hear(/^(?:(очередь|👤 Очередь))$/ig, async(msg) => cmd.turn(msg, cgroup, vk, request));
+hearManager.hear(/^(?:(очередь|👤 Очередь))$/ig, async(msg) => cmd.turn(msg, group_name));
 
 // лайки в ЛС:
-hearManager.hear(/^(?:(Ещё баллы 🔥|ОБМЕН 💙|⏭ Следующий|[ао]ц[ие]нить))$/ig, async(msg) => cmd.changeLikes(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(✅))$/ig, async(msg) => cmd.ready(msg, page, COLL_NAME, vk));
-hearManager.hear(/^(?:(❌))$/ig, async(msg) => cmd.cancel(msg, COLL_NAME, vk));
+hearManager.hear(/^(?:(Ещё баллы 🔥|ОБМЕН 💙|⏭ Следующий|[ао]ц[ие]нить))$/ig, async(msg) => cmd.changeLikes(msg, group_name));
+hearManager.hear(/^(?:(✅))$/ig, async(msg) => cmd.ready(msg, group_name));
+hearManager.hear(/^(?:(❌))$/ig, async(msg) => cmd.cancel(msg, group_name));
 
 
 // Административные
-hearManager.hear(/(?:!)\s([^]+)/i, async(msg) => cmd.eval(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(givemoder))/ig, async(msg) => cmd.giveModer(msg, vk, utils.vkId, user, COLL_NAME));
-hearManager.hear(/^(?:(givevip))/ig, async(msg) => cmd.giveVip(msg, vk, utils.vkId, user, COLL_NAME));
-hearManager.hear(/^(?:(добавить))/ig, async(msg) => cmd.addPhoto(msg, vk, utils.vkId, user, COLL_NAME));
-hearManager.hear(/^(?:(givebalance))/ig, async(msg) => cmd.givebalance(msg, COLL_NAME, vk, utils.vkId, user));
-hearManager.hear(/^(mailing)/ig, async(msg) => cmd.mailing(msg, vk, page, cgroup));
-hearManager.hear(/^(updatedb)/ig, async(msg) => cmd.updatedb(msg, COLL_NAME, vk));
+hearManager.hear(/(?:!)\s([^]+)/i, async(msg) => cmd.eval(msg, group_name));
+hearManager.hear(/^(?:(givemoder))/ig, async(msg) => cmd.giveModer(msg, group_name));
+hearManager.hear(/^(?:(givevip))/ig, async(msg) => cmd.giveVip(msg, group_name));
+hearManager.hear(/^(?:(добавить))/ig, async(msg) => cmd.addPhoto(msg, group_name));
+hearManager.hear(/^(?:(givebalance))/ig, async(msg) => cmd.givebalance(msg, group_name));
+hearManager.hear(/^(mailing)/ig, async(msg) => cmd.mailing(msg, group_name));
+hearManager.hear(/^(updatedb)/ig, async(msg) => cmd.updatedb(msg, group_name));
 
 // Репорт система
-hearManager.hear(/^(?:(Репорт 🆘|репорт|баг|пр[ие]дл[ао]жить))$/ig, async(msg) => cmd.faq(msg, COLL_NAME, vk));
-hearManager.hear(/^(?:(🆘 Репорт))$/ig, async(msg) => cmd.report(msg, report, COLL_NAME, vk));
-hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, answer, COLL_NAME, vk, utils.vkId, user));
+hearManager.hear(/^(?:(Репорт 🆘|репорт|баг|пр[ие]дл[ао]жить))$/ig, async(msg) => cmd.faq(msg));
+hearManager.hear(/^(?:(🆘 Репорт))$/ig, async(msg) => cmd.report(msg, group_name));
+hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, group_name));
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
 
@@ -311,10 +304,10 @@ updates.on('message_event', async(obj) => {
 
 
 // event
-updates.on('like_add', async(obj) => utils.like_add(obj, COLL_NAME, vk, cgroup, page));
-updates.on('poll_vote_new', async(obj) => utils.poll_vote_new(obj, COLL_NAME, vk, cgroup, page));
-updates.on('wall_reply_new', async(obj) => utils.wall_reply_new(obj, COLL_NAME, vk, cgroup));
-updates.on(['wall_post_new'], async(obj) => utils.wall_post_new(obj, vk, donate_app));
+updates.on('like_add', async(obj) => utils.like_add(obj, group_name));
+updates.on('poll_vote_new', async(obj) => utils.poll_vote_new(obj, group_name));
+updates.on('wall_reply_new', async(obj) => utils.wall_reply_new(obj, group_name));
+updates.on(['wall_post_new'], async(obj) => utils.wall_post_new(obj, group_name));
 
 
 hearManager.hear(/^(?:[0-9]+)$/i, async(msg) => {
@@ -355,7 +348,7 @@ hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
     }
 
     if (msg.user.olink === answer) {
-        let target = await utils.dataBase(msg.user.answer, COLL_NAME, vk);
+        let target = await utils.dataBase(msg.user.answer, group_name);
 
         await msg.send(`📃 [id${msg.senderId}|${msg.user.fname}] дал ответ пользователю [id${target.vk}|${target.fname}] 🍏`);
         await vk.api.messages.send({

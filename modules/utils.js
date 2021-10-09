@@ -1,19 +1,14 @@
 const db = require('../modules/db/MongoConnect');
 const request = require("request"); // Запросы к сайтам!
+const { VK, Keyboard, MessageContext } = require('vk-io');
 const fs = require('fs');
 const user = require("./db/ProfileConnect"); // Профили игроков/информация!
+const data = require('../config/data.json');
 
 let people = [];
 
 
 module.exports = {
-    /**
-     * Метод авторизации пользователя
-     * @param {any} msg
-     */
-    authUser: function (msg) {
-        
-    },
     senderMessage: function(msg, array, time = 2000) {
         let interval = 0;
         array.forEach(message => {
@@ -23,9 +18,12 @@ module.exports = {
             interval += time;
         });
     },
-    createPostFB: async function(id, cgroup, page) {
+    createPostFB: async function(user_id, group) {
+        let page = this.getVk(group, 'page_token'),
+            cgroup = data[group].group_id;
+
         let message = ["лайк через несколько минут выберу в лт 😍❤", "оуоуоу лайкаем постик и попадаем в лт в 2 раза чаще ✨\n🌿лайкнул(-а)? \n пиши в комменты (p.s. некоторых возьму в закреп)🥰🤫"]
-        const [userq] = await page.api.users.get({ user_ids: id, fields: "photo_id" });
+        const [userq] = await page.api.users.get({ user_ids: user_id, fields: "photo_id" });
         let avatar = userq.photo_id; // получили фото с аватарки
         let rand = this.random(0, 3);
         let pollId;
@@ -84,7 +82,10 @@ module.exports = {
         })
 
     },
-    postPublication: async function(photo, cgroup, page) {
+    postPublication: async function(photo, group) {
+        let cgroup = data[group].group_id,
+            page = this.getVk(group, 'page_token');
+
         let message = ["лайк через несколько минут выберу в лт 😍❤", "оуоуоу лайкаем постик и попадаем в лт в 2 раза чаще ✨\n🌿лайкнул(-а)? \n пиши в комменты (p.s. некоторых возьму в закреп)🥰🤫"]
 
         console.log('Пришли данные' + photo);
@@ -103,14 +104,17 @@ module.exports = {
         request(link, function(error, response, body) { error ? console.log(error) : console.log(body) });
         // http://twidmk.com/api_promokode.php?group_id=109847065&preference=0&page=new_queue_lt&photo=https://vk.com/photo438628140_457254271&position=0&access_token=9c411987f964f2214e6e8dbbaefd7ac939034c2083037391ed71d3cf29dcffe38273cbca7929bd2f403bd6b213
     },
-    like_add: async function(obj, COLL_NAME, vk, cgroup, page) {
+    like_add: async function(obj, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = this.getVk(group);
+
         const smile = ["😱", "😍", "🥰", "😘", "🙉", "😻", "🙀", "🤑", "😜", "🤪", "😏", "🤩", "🤗", "😃", "🥳"]
 
         const { likerId, objectId } = obj;
 
         // получаем пользователя в БД
         const t = await user(COLL_NAME, likerId);
-        if (t.error) return this.regDataBase(likerId, COLL_NAME, vk);
+        if (t.error) return this.regDataBase(likerId, group);
 
         // if (t.permission < 5) return;
         // получаем лайки пользователя
@@ -140,18 +144,21 @@ module.exports = {
         }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
 
         // добавляем в ЛТ, если есть баллы:
-        this.checkBalance(t, cgroup, vk, page);
+        this.checkBalance(t, group);
 
     },
-    poll_vote_new: async function(obj, COLL_NAME, vk, cgroup, page) {
-        return true;
+
+    poll_vote_new: async function(obj, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = this.getVk(group);
+
         const smile = ["😱", "😍", "🥰", "😘", "🙉", "😻", "🙀", "🤑", "😜", "🤪", "😏", "🤩", "🤗", "😃", "🥳"]
 
         const { id, userId } = obj;
 
         // получаем пользователя в БД
         const t = await user(COLL_NAME, userId);
-        if (t.error) return this.regDataBase(userId, COLL_NAME, vk);
+        if (t.error) return this.regDataBase(userId, group);
 
         // if (t.permission < 5) return;
         // получаем лайки пользователя
@@ -181,9 +188,12 @@ module.exports = {
         }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
 
         // добавляем в ЛТ, если есть баллы:
-        this.checkBalance(t, cgroup, vk, page);
+        this.checkBalance(t, group);
     },
-    wall_post_new: async function(obj, vk, donate_app) {
+    wall_post_new: async function(obj, group) {
+        const vk = this.getVk(group),
+            donate_app = data[group].donate_app;
+
         let rand_message = [
             "Сможешь написать слово «ТЕЛЕЖКА» по буквам, чтобы тебя никто не перебил? 🛒",
             "Сможешь написать слово «СОЛНЦЕ» по буквам, чтобы тебя никто не перебил? ☀",
@@ -225,10 +235,14 @@ module.exports = {
             message: `${rand_message[this.random(0, rand_message.length - 1)]}`
         });
     },
-    wall_reply_new: async function(obj, COLL_NAME, vk, cgroup) {
+    wall_reply_new: async function(obj, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = this.getVk(group),
+            cgroup = data[group].group_id;
+
         if (obj.fromId == obj.ownerId) return; // игнор если группа
         let t = await user(COLL_NAME, obj.fromId);
-        if (t.error) return this.regDataBase(obj.fromId, COLL_NAME, vk);
+        if (t.error) return this.regDataBase(obj.fromId, group);
 
         // Если не подписчик:
         vk.api.groups.isMember({
@@ -280,7 +294,10 @@ module.exports = {
         });
 
     },
-    checkBalance: async function(t, cgroup, vk, page) {
+    checkBalance: async function(t, group) {
+        const vk = this.getVk(group),
+            cgroup = data[group].group_id;
+
         if (t.rub > 40 && !t.issued && !t.sticker && t.page == 0) {
             if (t.alert) return vk.api.messages.send({
                 user_id: t.vk,
@@ -300,14 +317,14 @@ module.exports = {
             t.price = 500;
 
             if (cgroup == 189152994) {
-                this.createPostFB(t.vk, cgroup, page);
+                this.createPostFB(t.vk, group);
             }
             // this.sendToQueue(t.vk, cgroup);
 
             const [userq] = await vk.api.users.get({ user_ids: t.vk, fields: "photo_id" });
             let avatar = userq.photo_id; // получили фото с аватарки
 
-            this.postPublication(avatar, cgroup, page);
+            this.postPublication(avatar, group);
             this.setPhoto(avatar);
 
             if (t.alert) return vk.api.messages.send({
@@ -327,7 +344,11 @@ module.exports = {
         }
         return false;
     },
-    giveBonus: function(msg, cgroup, page, donate_app) {
+    giveBonus: function(msg, group) {
+        const page = this.getVk(group, 'page_token'),
+            cgroup = data[group].group_id,
+            donate_app = data[group].donate_app;
+
         let text = ["Донатишь 30 руб и попадаешь в ЛТ без очереди на 1 место. 🥳",
             `😊 Прямо сейчас скидки на покупку ЛТ, переходи в Донаты группы 🚀`,
             `💌 Если хочешь в ЛТ, но лень лайкать, кидай денюжку на развитие группы и мы возьмём тебя в ЛТ 🚀`,
@@ -347,28 +368,34 @@ module.exports = {
             .catch((err) => console.log(err));
 
     },
-    anyTime: async function(msg, COLL_NAME, vk, page, cgroup, donate_app) {
-        let t = await this.dataBase(msg.senderId, COLL_NAME, vk);
+    anyTime: async function(msg, group) {
+
+        let t = await this.dataBase(msg.senderId, group);
         msg.user = t;
-        this.checkBalance(t, cgroup, vk, page);
+        this.checkBalance(t, group);
 
         // функции на каждый день
         let date = new Date().getDate();
         if (date != t.lastOnline) {
             t.lastOnline = date; // Дата последнего сообщения!
-            this.giveBonus(msg, cgroup, page, donate_app);
+            this.giveBonus(msg, group);
         }
     },
-    dataBase: async function(userId, COLL_NAME, vk) {
+    dataBase: async function(userId, group) {
+        const COLL_NAME = data[group].dataBase;
+
         let t = await user(COLL_NAME, userId);
         if (t.error) {
             let NewUser = await db().collection(COLL_NAME).findOne({ vk: userId });
-            if (!NewUser) await this.regDataBase(userId, COLL_NAME, vk);
+            if (!NewUser) await this.regDataBase(userId, group);
             t = await user(COLL_NAME, userId);
         }
         return t;
     },
-    vipUpdate: async function(COLL_NAME, vk) {
+    vipUpdate: async function(group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = this.getVk(group);
+
         let users = await db().collection(COLL_NAME).find({ "permission": { $gte: 1 } }).toArray(); // получаем людей с VIP статусом
 
         // return console.log(users[0].vk);
@@ -421,10 +448,7 @@ module.exports = {
         })
 
     },
-    getPhoto: async function(msg, COLL_NAME, vk) {
-        let userDB = await this.dataBase(msg.senderId, COLL_NAME, vk);
-        msg.user = userDB;
-
+    getPhoto: async function(msg) {
         Array.prototype.diff = function(a) {
             return this.filter(function(i) { return a.indexOf(i) < 0; });
         };
@@ -457,7 +481,10 @@ module.exports = {
         let answer = await this.doRequest(link);
         return answer;
     },
-    regDataBase: async function(id_user, COLL_NAME, vk) { // регистрация пользователя
+    regDataBase: async function(id_user, group) { // регистрация пользователя
+        const COLL_NAME = data[group].dataBase,
+            vk = this.getVk(group);
+
         let NewUser = await db().collection(COLL_NAME).findOne({ vk: id_user });
         if (!NewUser) {
             console.log(`Регистрирую пользователя с ID ${id_user} в базу данных ${COLL_NAME}`)
@@ -728,7 +755,10 @@ module.exports = {
         }
         return { 'keybo': keybo, 'win': win };
     },
-    updateWidget: function(token, COLL_NAME) {
+    updateWidget: function(group) {
+        const COLL_NAME = data[group].dataBase,
+            token = data[group].widget_token;
+
         console.log(`Обновляю виджет..`);
         // let time = new Date();
 
@@ -825,7 +855,11 @@ module.exports = {
     getUnix: () => {
         return Date.now();
     },
-    vkId: async function(collection, str, vk) {
+    vkId: async function(user_id, group) {
+        const collection = data[group].dataBase,
+            vk = this.getVk(group),
+            str = user_id;
+
         // console.log(`Смотрю пользователя с ID ${str} в базу данных ${collection}, его вк ид: ${vk}`)
         str = str + "";
         return new Promise((r, x) => {
@@ -852,7 +886,10 @@ module.exports = {
             }
         });
     },
-    getDonateKeybo: function(appId, groupId) {
+    getDonateKeybo: function(group) {
+        const appId = data[group].donate_app_id,
+            groupId = data[group].group_id;
+
         return keybo = {
             disable_mentions: 1,
             keyboard: JSON.stringify({
@@ -862,6 +899,20 @@ module.exports = {
                 ]
             })
         }
+    },
+    /**
+     * Получить VK для API
+     * @param {*} group 
+     * @param {*} type 
+     * @returns 
+     */
+    getVk: function(group, type = 'group_token') {
+        return new VK({
+            token: data[group][type],
+            lang: "ru",
+            pollingGroupId: data[group].group_id,
+            apiMode: "parallel"
+        });
     },
     random: function(min, max) { // Функция для Выбора рандомного числа:
         let rand = min + Math.random() * (max + 1 - min);
