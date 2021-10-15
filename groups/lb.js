@@ -1,19 +1,22 @@
 process.env.TZ = "Europe/Moscow"; // Часовой пояс, а Выше убрать ошибки из консоли!
 
 /* Default module */
-const roulette = require('../modules/roulette/roulette');
-const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const cmd = require("../modules/cmd"); // Основные команды
-const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
 const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
-const { regDataBase, vkId, random } = require('../modules/utils');
-let twidmk = new Object();
 const config = require("../config/data.json");
 const { VK, Keyboard, MessageContext } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
 const hearManager = new HearManager();
+
+/* custom module */
+const roulette = require('../modules/roulette/roulette');
+const utils = require("../modules/utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
+const cmd = require("../modules/cmd"); // Основные команды
+const user = require("../modules/db/ProfileConnect"); // Профили игроков/информация!
+let twidmk = new Object();
+const poster = require('../modules/poster/index');
+
 /*----------------------------------------------------------------------------------------------------------*/
 /*Подключение бота к сообществу:*/
 /*----------------------------------------------------------------------------------------------------------*/
@@ -125,6 +128,11 @@ hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cm
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
 hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
+hearManager.hear(/^(?:(startposter))$/ig, async(msg) => {
+    let result = poster.poster(group_name);
+    console.log(result);
+    return msg.send('all okay');
+});
 
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню

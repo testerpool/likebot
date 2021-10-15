@@ -310,18 +310,21 @@ module.exports = {
         return msg.send(`👀 Хорошо, мы больше не будем предлагать Вам это фото`, next);
     },
     turn: async function(msg, group) {
-        const cgroup = data[group].group_id,
-            vk = utils.getVk(group);
+        const vk = utils.getVk(group),
+            collection = data[group].dataBase;
 
-        msg.send(`👉🏻 Смотрим очередь, секунду..`);
-        let user = Number(msg.senderId);
-        let [IUser] = await vk.api.users.get({ user_ids: msg.senderId });
+        let emoji = ["1⃣", "2⃣", "3⃣", "4⃣", "5⃣", "6⃣", "7⃣", "8⃣", "9⃣", "🔟"];
+
+        let [IUser] = await vk.api.users.get({ user_ids: Number(msg.senderId) });
 
         if (IUser.is_closed == true) return msg.answer(`❌ Ваша страница закрыта! Просьба открыть её и повторить попытку..`); // Если закрыта страничка
 
-        let number = await utils.checkTurn(user, cgroup);
-        if (number === 404) return msg.send(`Вы не в очереди ⚠\n\n 💫 Копите баллы проявляя активность на стене и бот Вас возьмёт 💕`);
-        return msg.send(`📥 Вы в очереди под номером: <<${number}>>\n\n Спасибо что Вы с нами ✨`);
+        db().collection(collection).find().project({ "id": 1, "vk": 1, 'balance': 1, 'fname': 1, 'lname': 1 }).sort({ "balance": -1 }).limit(10).toArray(async(err, res1) => {
+            var buffer2 = res1.map((user, i) => {
+                return `${emoji[i]} [id${user.vk}|${user.fname} ${user.lname}] ▬ ${utils.toCommas(user.balance)} 🌟`
+            });
+            return msg.send(`👉🏻 быстрее всего в LT попaдyт: \n${buffer2.join("\n")} \n—————————————————\n▶[id${msg.user.vk}|${msg.user.fname} ${msg.user.lname}] — ${utils.toCommas(Math.floor(msg.user.balance))} 🌟`);
+        });
     },
     alert: async function(msg) {
         let keybo = {
@@ -415,8 +418,8 @@ module.exports = {
         if (IUser.is_closed == true) smsg += `Зачем ты обманываешь? Я же вижу что страница закрыта! \n ❗ ЭТО ВАЖНО ❗\n\n`
         if (IUser.is_closed == false) smsg += `Вижу твой профиль открыт, хорошо 😊\n\n`
 
-        smsg += `Теперь просто накопи ${msg.user.price} баллов 🌟\n\n`
-        smsg += `Баллы тебе будут начисляться автоматически:\n`
+        smsg += `Тебе нужно накопить больше всех баллов 🌟\n\n`
+        smsg += `Баллы будут начисляться автоматически:\n`
         smsg += `✅ за лайк поста +1 балл 🌟\n`
         smsg += `✅ за комментарий любого поста +1 балл 🌟\n`
         smsg += `✅ за голосование любого опроса на стене +1 балл 🌟\n`
@@ -632,8 +635,8 @@ module.exports = {
                 inline: true,
                 buttons: [
                     [{ "action": { "type": "text", "label": "Не хочу копить баллы 🌚" }, "color": "negative" }],
-                    [{ "action": { "type": "text", "label": "Ещё баллы 🔥" }, "color": "positive" }]
-
+                    [{ "action": { "type": "text", "label": "Ещё баллы 🔥" }, "color": "positive" }],
+                    [{ "action": { "type": "text", "label": "👤 Очередь" }, "color": "secondary" }]
                 ]
             })
         }
@@ -641,7 +644,7 @@ module.exports = {
         smsg += `${Math.floor(msg.user.balance)} 🌟\n\n`
         if (msg.user.permission >= 1) smsg += `Также у тебя есть 💎 VIP статус 💎\n\n`
         smsg += `❗ Чтобы попасть в ЛТ нужно:\n\n`
-        smsg += `1️⃣ Накопить ${msg.user.price} баллов 💚 \n`
+        smsg += `1️⃣ Накопить больше всех баллов 💚 \n`
         smsg += `2️⃣ Открыть свой профиль ВКонтакте 👁‍🗨 \n`
         smsg += `3️⃣ Поставить фото на профиль 👤 \n`
 
@@ -667,7 +670,7 @@ module.exports = {
     },
     referrals: async function(msg, group) {
         const cgroup = data[group].group_id,
-            vk = data[group].group_page;
+            vk = utils.getVk(group);
 
 
         let ref = `https://vk.me/public${cgroup}?ref=${msg.senderId}&ref_source=${msg.senderId}`;
@@ -711,7 +714,7 @@ module.exports = {
     },
     givebalance: async function(msg, group) {
         const COLL_NAME = data[group].dataBase,
-            vk = data[group].group_page;
+            vk = utils.getVk(group);
 
         let rid = msg.params_org[0];
         let id = await vkId(rid, group),

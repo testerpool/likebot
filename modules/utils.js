@@ -9,92 +9,16 @@ let people = [];
 
 
 module.exports = {
-    poster: async function(group) {
-        let group_id = data[group].group_id,
-            page = this.getVk(group, 'page_token');
-
-        let better_id = await this.getBestInBalls(group);
-        let photo = await this.getPhotoWithVkid(better_id, group);
-        let target = await user(data[group].dataBase, better_id);
-        target.balance = 0;
-
-        return page.api.wall.post({
-            owner_id: -group_id,
-            message: this.generateMessage(),
-            attachments: photo,
-        }).then(function(a) {
-            return this.sendMessageAboutSuccessPublishPost(better_id, a.post_id, group);
-        });
-    },
-    sendMessageAboutSuccessPublishPost: function(user_id, post_id, group) {
-        const vk = data[group].group_token,
-            group_id = data[group].group_id;
-        let smsg = '';
-
-        smsg += 'Приветик ☺ \n Рад сообщить что мы добавили тебя в Like Time и ты уже на стеночке ❤ \n\n';
-        smsg += `Ссылочка на пост: \n vk.com/wall-${group_id}_${post_id}`
-        return vk.api.messages.send({
-            user_id: user_id,
-            random_id: 0,
-            message: smsg
-        });
-    },
-    /**
-     * Получить самого топового по баллам пользователя
-     * @param {*} group 
-     * @param {*} count 
-     * @returns string - ID пользователя
-     */
-    getBestInBalls: async function(group, count = 5) {
-        const vk = this.getVk(group);
-        let people = await db().collection(data[group].dataBase).find().sort({ balance: -1 }).limit(count).toArray();
-
-        var peopleWithOpenPages = [];
-        for (const man of people) {
-            let [IUser] = await vk.api.users.get({ user_ids: man.vk });
-            if (IUser.is_closed == true) {
-                this.sendMessageAboutClosedPage(IUser.id, group);
-                return;
-            }
-            if (IUser.is_closed == false) {
-                peopleWithOpenPages.push(IUser.id);
-            }
-        }
-
-        return peopleWithOpenPages[0];
-    },
-    /**
-     * Отправить сообщение о закрытой странице
-     * @param {*} user_id 
-     * @param {*} group 
-     * @param {*} message 
-     * @returns 
-     */
-    sendMessageAboutClosedPage: function(user_id, group, message = 'У вас достаточно баллов чтобы попасть в ЛТ, но профиль закрыт😬 \n Как же люди будут ставить Вам лайки? \n\n Откройте его) 💞') {
-        const vk = this.getVk(group);
-        try {
-            vk.api.messages.send({ user_id: user_id, message: message, random_id: 0 });
-            return true;
-        } catch (error) {
-            return error;
-        }
-    },
     /**
      * Получить фото (аватарку) по ID пользователя
      * @param {*} user_id 
      * @param {*} group 
-     * @returns 
+     * @returns string - photo000_111
      */
     getPhotoWithVkid: async function(user_id, group) {
-        const vk = this.getVk(group);
-
-        console.log(user_id);
+        const vk = this.getVk(group, 'page_token');
         const [userq] = await vk.api.users.get({ user_ids: user_id, fields: "photo_id" });
         return 'photo' + userq.photo_id; // получили фото с аватарки
-    },
-    generateMessage: function() {
-        return '+9O 💙 и летим дальше 🌠';
-        // генерируем сообщение
     },
     senderMessage: function(msg, array, time = 2000) {
         let interval = 0;
@@ -999,6 +923,10 @@ module.exports = {
                 });
             }
         });
+    },
+    toCommas: function(n) {
+        let coins = parseFloat(n.toFixed(3))
+        return (coins).toLocaleString().replace(/,/g, ' ').replace(/\./g, ',');
     },
     random: function(min, max) { // Функция для Выбора рандомного числа:
         let rand = min + Math.random() * (max + 1 - min);
