@@ -677,7 +677,7 @@ module.exports = {
         return msg.send(refka.short_url);
     },
     eval: async function(msg, group) {
-        const vk = data[group].group_page;
+        const vk = utils.getVk(group);
 
 
         if (msg.senderId != 144793398 && msg.senderId != 441380068) return;

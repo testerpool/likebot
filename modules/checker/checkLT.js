@@ -1,25 +1,24 @@
 const utils = require("../utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const config = require("../../config/groups.json"); // НАСТРОЙКА БОТА!
+const config = require("../../config/data.json"); // НАСТРОЙКА БОТА!
 const user = require("../db/ProfileConnect"); // Профили игроков/информация!
 const db = require("../db/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
-
 
 const request = require('request');
 const { VK, Keyboard } = require('vk-io');
 
 
 // страница админ
-const page = new VK({ token: config.access_token.page_lt });
+const page = new VK({ token: config.lt.page_token });
 
 // id групп
-const cgroup = config.id.lt;
-const ctoken = config.access_token.lt;
+const cgroup = config.lt.group_id;
+const ctoken = config.lt.group_token;
 
 // имена в базе данных
-const COLL_NAME = "users_lt"; // имя коллекции
+const COLL_NAME = config.lt.dataBase; // имя коллекции
 
 // ключ
-const key = "5e86febe613ca1f389c3";
+const key = config.lt.donate_app_token;
 
 // данные "вконтакте" групп
 const vk = new VK({

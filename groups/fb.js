@@ -59,16 +59,16 @@ updates.on('message', async(msg, next) => {
             return msg.send(`💌 Донат примимаем автоматически \n\nПЕРЕХОДИ 👉 ${donate_app}`)
         }
         if (msg.attachments[0].toString() == 'market-189152994_4529584') {
-            return cmd.marketBall(msg, donate_app);
+            return cmd.marketBall(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-189152994_4529593') {
-            return cmd.marketFirst(msg, donate_app);
+            return cmd.marketFirst(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-189152994_4529594') {
-            return cmd.marketApart(msg, donate_app);
+            return cmd.marketApart(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-189152994_4529596') {
-            return cmd.marketPin(msg, donate_app);
+            return cmd.marketPin(msg, group_name);
         }
     }
 
@@ -173,6 +173,8 @@ hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
 });
 
 updates.on('message_event', async(obj) => {
+    let userDB = await utils.vkId(obj.userId, group_name),
+        target = await user(COLL_NAME, userDB);
 
     // console.log(obj);
     // Функции при событии "действие с сообщением".
@@ -222,7 +224,7 @@ updates.on('message_event', async(obj) => {
                 }) // Редактирование сообщения.
             target.sticker = sticker;
             return vk.api.messages.send({
-                chat_id: 18,
+                chat_id: 14,
                 random_id: 0,
                 message: `🐯 Стикеры 🐯\n\n ➡ [id${target.vk}|${target.fname}] \n 💌 Желающий стикер-пак: \n${target.sticker}`,
                 keyboard: JSON.stringify({
@@ -256,7 +258,7 @@ updates.on('message_event', async(obj) => {
             }
             let userId = obj.eventPayload.data.user;
             let sticker = obj.eventPayload.data.sticker;
-            let id = await vkId(COLL_NAME, userId, vk),
+            let id = await utils.vkId(userId, group_name),
                 t = await user(COLL_NAME, id);
 
             t.issued = true;
@@ -281,16 +283,13 @@ updates.on('message_event', async(obj) => {
         }
 
         if (obj.eventPayload.event_id == report) {
-            let userDB = await vkId(COLL_NAME, obj.userId, vk),
-                target = await user(COLL_NAME, userDB);
-
-
             if (target.permission < 3) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ У Вас недостаточно прав" }) }) // Отображение сообщения в snackbar'е.
             let rid = obj.eventPayload.user;
-            let id = await vkId(COLL_NAME, rid, vk),
+            let id = await utils.vkId(rid, group_name),
                 t = await user(COLL_NAME, id);
 
-
+            console.log(COLL_NAME);
+            console.log(id);
             if (t.error) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ Человек не найден, возможно не зарегистрирован" }) }) // Отображение сообщения в snackbar'е.
 
             target.olink = answer;
@@ -369,3 +368,8 @@ hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
     }
 
 });
+
+
+setInterval(() => {
+    utils.poster(group_name);
+}, 3600000);

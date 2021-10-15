@@ -58,16 +58,16 @@ updates.on('message', async(msg, next) => {
             return msg.send(`💌 Донат примимаем автоматически \n\nПЕРЕХОДИ 👉 ${donate_app}`)
         }
         if (msg.attachments[0].toString() == 'market-165367966_5413056') {
-            return cmd.marketBall(msg, donate_app);
+            return cmd.marketBall(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-165367966_5376512') {
-            return cmd.marketFirst(msg, donate_app);
+            return cmd.marketFirst(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-165367966_5413065') {
-            return cmd.marketApart(msg, donate_app);
+            return cmd.marketApart(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-165367966_5413057') {
-            return cmd.marketPin(msg, donate_app);
+            return cmd.marketPin(msg, group_name);
         }
     }
 
@@ -209,7 +209,7 @@ hearManager.hear(/^(?:(deletetest))/ig, async(msg) => {
 });
 
 updates.on('message_event', async(obj) => {
-    let userDB = await vkId(obj.id, group),
+    let userDB = await utils.vkId(obj.userId, group_name),
         target = await user(COLL_NAME, userDB);
 
     // console.log(obj);
@@ -294,7 +294,7 @@ updates.on('message_event', async(obj) => {
             }
             let userId = obj.eventPayload.data.user;
             let sticker = obj.eventPayload.data.sticker;
-            let id = await vkId(COLL_NAME, userId, vk),
+            let id = await utils.vkId(userId, group_name),
                 t = await user(COLL_NAME, id);
 
             t.issued = true;
@@ -321,10 +321,11 @@ updates.on('message_event', async(obj) => {
         if (obj.eventPayload.event_id == report) {
             if (target.permission < 3) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ У Вас недостаточно прав" }) }) // Отображение сообщения в snackbar'е.
             let rid = obj.eventPayload.user;
-            let id = await vkId(COLL_NAME, rid, vk),
+            let id = await utils.vkId(rid, group_name),
                 t = await user(COLL_NAME, id);
 
-
+            console.log(COLL_NAME);
+            console.log(id);
             if (t.error) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ Человек не найден, возможно не зарегистрирован" }) }) // Отображение сообщения в snackbar'е.
 
             target.olink = answer;
@@ -452,3 +453,8 @@ function test() {
     });
 
 }
+
+
+setInterval(() => {
+    utils.poster(group_name);
+}, 3600000);

@@ -1,5 +1,5 @@
 const utils = require("../utils"); // Дополнения к боту [КрасиВые деньги, ID игрока и др.]
-const config = require("../../config/groups.json"); // НАСТРОЙКА БОТА!
+const config = require("../../config/data.json"); // НАСТРОЙКА БОТА!
 const user = require("../db/ProfileConnect"); // Профили игроков/информация!
 const db = require("../db/MongoConnect"); // Подключение к БАЗЕ ДАННЫХ!
 
@@ -8,17 +8,17 @@ const { VK, Keyboard } = require('vk-io');
 
 
 // страница админ
-const page = new VK({ token: config.access_token.page_fb });
+const page = new VK({ token: config.fb.page_token });
 
 // id групп
-const cgroup = config.id.fb;
-const ctoken = config.access_token.fb;
+const cgroup = config.fb.group_id;
+const ctoken = config.fb.group_token;
 
 // имена в базе данных
-const COLL_NAME = "users_fb"; // имя коллекции
+const COLL_NAME = config.fb.dataBase; // имя коллекции
 
 // ключ
-const key = "c32ee659ef92dbb723a3";
+const key = config.fb.donate_app_token;
 
 // данные "вконтакте" групп
 const vk = new VK({

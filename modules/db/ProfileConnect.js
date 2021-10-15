@@ -3,7 +3,7 @@
 const db = require('./MongoConnect');
 
 module.exports = (collection, id, error) => {
-    // console.log(`Смотрю пользователя в "user" в базе данных ${collection}`)
+    // console.log(`Смотрю пользователя в ${id} в базе данных ${collection}`)
 
     return new Promise((resolve) => {
         db().collection(collection).findOne({

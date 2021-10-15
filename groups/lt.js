@@ -58,16 +58,16 @@ updates.on('message', async(msg, next) => {
             return msg.send(`💌 Донат примимаем автоматически \n\nПЕРЕХОДИ 👉 ${donate_app}`)
         }
         if (msg.attachments[0].toString() == 'market-164711863_5399019') {
-            return cmd.marketBall(msg, donate_app);
+            return cmd.marketBall(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-164711863_5399021') {
-            return cmd.marketFirst(msg, donate_app);
+            return cmd.marketFirst(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-164711863_5399023') {
-            return cmd.marketApart(msg, donate_app);
+            return cmd.marketApart(msg, group_name);
         }
         if (msg.attachments[0].toString() == 'market-164711863_5399024') {
-            return cmd.marketPin(msg, donate_app);
+            return cmd.marketPin(msg, group_name);
         }
     }
 
@@ -185,9 +185,20 @@ hearManager.hear(/^(?:(🆘 Репорт))$/ig, async(msg) => cmd.report(msg, gr
 hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, group_name));
 
 updates.on('message_event', async(obj) => {
-    if (obj.eventPayload.event_id == report) {
-        let userDB = await vkId(obj.userId, group_name),
-            target = await user(COLL_NAME, userDB);
+    let userDB = await utils.vkId(obj.userId, group_name),
+        target = await user(COLL_NAME, userDB);
+
+    // console.log(obj);
+    // Функции при событии "действие с сообщением".
+    // Используется для работы с Callback-кнопками (подробнее на https://vk.com/dev/bots_docs_5).
+    // Чтобы сделать определенное действие надо выполнить проверку, например:
+    // if (obj.eventPayload.command === "test") {
+
+    // }   
+    if (obj.eventPayload.command === "тест") return vk.api.messages.edit({ peer_id: obj.peerId, message: "Со мной всё впорядке, спасибо что позаботились обо мне! ☺", conversation_message_id: obj.conversationMessageId }) // Редактирование сообщения.
+    if (obj.eventPayload.link) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "open_link", link: obj.eventPayload.link }) }) // Открытие ссылки.
+    if (obj.eventPayload.app_id) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "open_app", app_id: obj.eventPayload.app_id, owner_id: obj.eventPayload.owner_id }) }) // Открытие приложения в ВКонтакте.
+    if (obj.eventPayload.text) {
 
         if (obj.eventPayload.event_id == 5) {
             let sticker = obj.eventPayload.data;
@@ -225,7 +236,7 @@ updates.on('message_event', async(obj) => {
                 }) // Редактирование сообщения.
             target.sticker = sticker;
             return vk.api.messages.send({
-                chat_id: 24,
+                chat_id: 14,
                 random_id: 0,
                 message: `🐯 Стикеры 🐯\n\n ➡ [id${target.vk}|${target.fname}] \n 💌 Желающий стикер-пак: \n${target.sticker}`,
                 keyboard: JSON.stringify({
@@ -259,7 +270,7 @@ updates.on('message_event', async(obj) => {
             }
             let userId = obj.eventPayload.data.user;
             let sticker = obj.eventPayload.data.sticker;
-            let id = await vkId(COLL_NAME, userId, vk),
+            let id = await utils.vkId(userId, group_name),
                 t = await user(COLL_NAME, id);
 
             t.issued = true;
@@ -271,18 +282,33 @@ updates.on('message_event', async(obj) => {
                 }) // Редактирование сообщения.
         }
 
-        if (target.permission < 3) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ У Вас недостаточно прав" }) }) // Отображение сообщения в snackbar'е.
-        let rid = obj.eventPayload.user;
-        let id = await vkId(COLL_NAME, rid, vk),
-            t = await user(COLL_NAME, id);
+        if (obj.eventPayload.event_id == 228) {
+            let userId = obj.eventPayload.data.user;
+            let groupId = obj.eventPayload.data.group;
 
+            twidmk[obj.userId] = Object();
 
-        if (t.error) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ Человек не найден, возможно не зарегистрирован" }) }) // Отображение сообщения в snackbar'е.
+            let turn = await utils.checkTurn(userId, groupId);
+            if (turn != 404) return vk.api.messages.edit({ peer_id: obj.peerId, message: "Данный человек уже в очереди!", conversation_message_id: obj.conversationMessageId }) // Редактирование сообщения.
+            utils.sendToQueue(userId, groupId);
+            return vk.api.messages.edit({ peer_id: obj.peerId, message: "Все в порядке, обработано ☺", conversation_message_id: obj.conversationMessageId }) // Редактирование сообщения.
+        }
 
-        target.olink = answer;
-        target.answer = t.vk;
+        if (obj.eventPayload.event_id == report) {
+            if (target.permission < 3) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ У Вас недостаточно прав" }) }) // Отображение сообщения в snackbar'е.
+            let rid = obj.eventPayload.user;
+            let id = await utils.vkId(rid, group_name),
+                t = await user(COLL_NAME, id);
 
-        return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: `✅ Пишите что хотите ответить пользователю ${t.fname}` }) }) // Отображение сообщения в snackbar'е.
+            console.log(COLL_NAME);
+            console.log(id);
+            if (t.error) return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: "❌ Человек не найден, возможно не зарегистрирован" }) }) // Отображение сообщения в snackbar'е.
+
+            target.olink = answer;
+            target.answer = t.vk;
+
+            return vk.api.messages.sendMessageEventAnswer({ event_id: obj.eventId, user_id: obj.userId, peer_id: obj.peerId, event_data: JSON.stringify({ type: "show_snackbar", text: `✅ Пишите что хотите ответить пользователю ${t.fname}` }) }) // Отображение сообщения в snackbar'е.
+        }
     }
 });
 
@@ -344,3 +370,8 @@ hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
     }
 
 });
+
+
+setInterval(() => {
+    utils.poster(group_name);
+}, 3600000);
