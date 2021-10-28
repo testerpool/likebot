@@ -17,6 +17,7 @@ module.exports = {
      */
     getPhotoWithVkid: async function(user_id, group) {
         const vk = this.getVk(group, 'page_token');
+        console.log('Пришел ID чтобы получить фото -> ', user_id);
         const [userq] = await vk.api.users.get({ user_ids: user_id, fields: "photo_id" });
         return 'photo' + userq.photo_id; // получили фото с аватарки
     },
@@ -142,7 +143,7 @@ module.exports = {
         if (t.alert) await vk.api.messages.send({
             user_id: t.vk,
             random_id: 0,
-            message: `💌 Выдаём балл за проявленную активность ${smile[this.random(0, smile.length - 1)]} \n [like 💙]\n\n У тебя ${t.balance} баллов 🌟 \n 👉🏻 Чтобы попасть в ЛТ необходимо ещё ${t.price - t.balance} баллов`,
+            message: `💌 Даю балл за активность в группе ${smile[this.random(0, smile.length - 1)]} \n [like 💙]\n\n У тебя ${t.balance} баллов 🌟`,
             keyboard: JSON.stringify({
                 inline: true,
                 buttons: [
@@ -186,7 +187,7 @@ module.exports = {
         if (t.alert) await vk.api.messages.send({
             user_id: t.vk,
             random_id: 0,
-            message: `💌 Выдаём балл за проявленную активность ${smile[this.random(0, smile.length - 1)]} \n [голосование ✅]\n\n У тебя ${t.balance} баллов 🌟 \n 👉🏻 Чтобы попасть в ЛТ необходимо ещё ${t.price - t.balance} баллов`,
+            message: `💌 Даю балл за активность в группе ${smile[this.random(0, smile.length - 1)]} \n [голосование ✅]\n\n У тебя ${t.balance} баллов 🌟`,
             keyboard: JSON.stringify({
                 inline: true,
                 buttons: [
@@ -274,16 +275,6 @@ module.exports = {
             }
         })
 
-        if (t.balance > 0 && t.balance < 300) {
-            if (t.alert) vk.api.wall.createComment({
-                owner_id: obj.ownerId,
-                post_id: obj.objectId,
-                reply_to_comment: obj.id,
-                user_id: obj.fromId,
-                message: `У тебя есть ${t.balance} баллов \n Осталось ${t.price - t.balance} чтобы попасть в ЛТ`
-            });
-        }
-
         /**
          * Если это комментарий первый от пользователя
          * то выдаём ему награду - балл
@@ -327,9 +318,6 @@ module.exports = {
             t.balance -= t.price;
             t.price = 500;
 
-            if (cgroup == 189152994) {
-                this.createPostFB(t.vk, group);
-            }
             // this.sendToQueue(t.vk, cgroup);
 
             const [userq] = await vk.api.users.get({ user_ids: t.vk, fields: "photo_id" });

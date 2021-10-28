@@ -20,7 +20,7 @@ setInterval(() => {
 }, interval);
 setInterval(() => {
     poster.poster('lt');
-}, interval);
+}, interval + 6000);
 setInterval(() => {
     poster.poster('fb');
-}, interval);
+}, interval + 12000);

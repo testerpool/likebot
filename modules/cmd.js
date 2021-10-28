@@ -224,9 +224,20 @@ module.exports = {
             vk = utils.getVk(group);
 
         msg.send('Секундочку..');
-        let smsg = ``;
         let database = await utils.getPhoto(msg, COLL_NAME, vk);
         if (database == undefined) return msg.send(`❌ сейчас нет подходящей фотографии для Вас, приходите позже`);
+
+        let photo = {
+            disable_mentions: 1,
+            keyboard: JSON.stringify({
+                inline: true,
+                buttons: [
+                    [
+                        { "action": { "type": "open_link", "label": "Открыть фотографию 📸", 'link': `https://vk.com/${database}` } }
+                    ]
+                ]
+            })
+        }
 
         let keybo = {
             disable_mentions: 1,
@@ -240,12 +251,12 @@ module.exports = {
             })
         }
 
-        smsg += `Если нравится - поставьте своё 💙 на этой фотографии и нажмите ✅, чтобы мы проверили\n\n`
-        smsg += `👉🏻 vk.com/${database}`
+        // smsg += `👉🏻 vk.com/${database}`
 
         msg.user.showsNow = database;
 
-        return msg.send(`Как Вам эта фотография? \n ${smsg}`, keybo);
+        await msg.send('👉🏻 Как Вам эта фотография? 👣', photo);
+        return msg.send(`Если нравится - поставьте своё 💙 на этой фотографии и нажмите ✅, чтобы мы проверили`, keybo);
     },
     ready: async function(msg, group) {
         const page = utils.getVk(group, 'page_token');
@@ -621,9 +632,10 @@ module.exports = {
         let smsg = ``;
 
         let keybo = await utils.getDonateKeybo(group);
-        smsg += `ты можешь купить за рубли баллы и накопить ${msg.user.price} баллов быстрее ✅\n`
-        smsg += `📃 Курс такой: 1₽ = 3O баллов \n\n`
+        smsg += `ты можешь купить баллы за рубли ✅\n`
+        smsg += `📃 Курс такой: 1₽ = 3O баллов \n`
         smsg += `За 1O₽ получишь 3OO баллов сразу же после пополнения 🌟\n\n`
+        smsg += '🎁 В подарочек от нас получишь возможность БЕСПЛАТНО получить платные стикеры 😱 \n\n'
         smsg += `Приложение 👇🏻 \n`;
 
         return msg.send(`Если ты не хочешь лайкать людей ${smsg}`, keybo)
@@ -642,6 +654,7 @@ module.exports = {
         }
 
         smsg += `${Math.floor(msg.user.balance)} 🌟\n\n`
+        smsg += `[₽] Рублей: ${msg.user.rub} \n\n`
         if (msg.user.permission >= 1) smsg += `Также у тебя есть 💎 VIP статус 💎\n\n`
         smsg += `❗ Чтобы попасть в ЛТ нужно:\n\n`
         smsg += `1️⃣ Накопить больше всех баллов 💚 \n`

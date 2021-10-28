@@ -14,6 +14,7 @@ module.exports = {
             page = utils.getVk(group, 'page_token');
 
         let better_id = await this.getBestInBalls(group);
+
         let photo = await utils.getPhotoWithVkid(better_id, group);
         let target = await user(data[group].dataBase, better_id);
         target.balance = 0;
@@ -55,19 +56,16 @@ module.exports = {
      */
     getBestInBalls: async function(group, count = 5) {
         const vk = utils.getVk(group);
-        let people = await db().collection(data[group].dataBase).find().sort({ balance: -1 }).limit(count).toArray();
+        let people = await db().collection(data[group].dataBase).find({}).sort({ balance: -1 }).limit(count).toArray();
 
         let peopleWithOpenPages = [];
         for (let man of people) {
             let [IUser] = await vk.api.users.get({ user_ids: man.vk });
-            console.log(man.vk);
             if (IUser.is_closed == true) {
                 this.sendMessageAboutClosedPage(IUser.id, group);
-                break;
             }
             if (IUser.is_closed == false) {
                 peopleWithOpenPages.push(IUser.id);
-                break;
             }
         }
 

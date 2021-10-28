@@ -370,8 +370,3 @@ hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
     }
 
 });
-
-
-setInterval(() => {
-    utils.poster(group_name);
-}, 3600000);

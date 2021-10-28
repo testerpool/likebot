@@ -366,10 +366,4 @@ hearManager.hear(/(.*)/igm, async(msg) => { // Навигация
 
         return msg.send(`ПИШИ мне "МЕНЮ" или "КОМАНДЫ" 👇🏻`, keybo);
     }
-
 });
-
-
-setInterval(() => {
-    utils.poster(group_name);
-}, 3600000);

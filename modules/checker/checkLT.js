@@ -21,7 +21,7 @@ setInterval(() => {
 }, interval);
 setInterval(() => {
     checker.checkDonate('lt');
-}, interval + 6000);
+}, interval);
 setInterval(() => {
     checker.checkDonate('fb');
-}, interval + 12000);
+}, interval);

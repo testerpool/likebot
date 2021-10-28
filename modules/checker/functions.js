@@ -26,6 +26,7 @@ module.exports = {
             let answer = JSON.parse(body); // answer
             const { donates } = answer;
 
+            console.log(answer);
             // полученные данные с доната:
             const uid = Number(donates[0].uid);
             const sum = Number(donates[0].sum);
@@ -39,7 +40,7 @@ module.exports = {
             if (NewUser.lastDonate == date) return console.log(`RETURN`);
 
             // получаем фото профиля:
-            const photo = await utils.getPhotoWithVkid(uid, group);
+            let photo = await utils.getPhotoWithVkid(uid, group);
 
             // если сообщение есть:
             if (message) {

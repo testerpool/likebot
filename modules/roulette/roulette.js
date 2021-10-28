@@ -1,5 +1,8 @@
 let utils = require('../utils');
 const data = require('../../config/data.json');
+const { Attachment } = require('vk-io');
+
+const price = 20;
 
 module.exports = {
     spin: async function(msg, group) {
@@ -10,7 +13,17 @@ module.exports = {
         let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
         let time = msg.user.roulette - Date.now(); // Формула которая считает конец времени VIP
 
-        if (time > 1) return msg.send(`❌ Бесплатно крутить рулетку можно раз в 20 часов 💎\n\n 💦 У [id${msg.user.vk}|Вас] время ещё не прошло \n ⌛ Осталось: ${utils.unixStampLeft(time)}`);
+        let keybo_paid = {
+            keyboard: JSON.stringify({
+                inline: true,
+                buttons: [
+                    [{ "action": { "type": "text", "label": "Платная рулетка 😎" }, "color": "primary" }]
+                ]
+            })
+        }
+
+        if (time > 1) return msg.send(`❌ Бесплатно крутить рулетку можно раз в 20 часов 💎\n\n
+        💦 У [id${msg.user.vk}|Вас] время ещё не прошло \n ⌛ Осталось: ${utils.unixStampLeft(time)}`, keybo_paid);
         let { keybo, win } = await utils.randomRoulette();
 
         msg.user.roulette = utils.getUnix() + 72000000;
@@ -49,4 +62,42 @@ module.exports = {
 
         return smsg;
     },
+
+    /**
+     * Информация о платной рулетке
+     * @param {*} msg 
+     * @returns string
+     */
+    info: async function(msg) {
+        let smsg = '';
+        let keybo = {
+            keyboard: JSON.stringify({
+                inline: true,
+                buttons: [
+                    [{ "action": { "type": "text", "label": "ПОПОЛНИТЬ СЧЁТ🌟" }, "color": "positive" }]
+                ]
+            })
+        };
+
+        smsg += '🐾 Вы можете прокрутить рулетку и в случае победы получаете стикеры (за 10 голосов, любые)\n'
+        smsg += `💰 Стоимость одного прокрута на данный момент: ${price}₽ \n`
+        smsg += `💼 У вас на счету: ${msg.user.rub} ₽ \n\n`
+
+        if (msg.user.rub > price) {
+
+            smsg += `Нажимая кнопку "Крутить рулетку 🎰" вы соглашаетесь с условиями акции`
+
+            keybo = {
+                keyboard: JSON.stringify({
+                    inline: true,
+                    buttons: [
+                        [{ "action": { "type": "text", "label": "Крутить рулетку 🎰" }, "color": "positive" }]
+                    ]
+                })
+            }
+        }
+
+        await msg.send(`🐯 Рулетка на стикеры: \n\n ${smsg}`, { attachment: 'photo-165367966_457251669' });
+        return msg.send('💦', keybo);
+    }
 }
