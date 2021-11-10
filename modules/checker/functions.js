@@ -19,6 +19,7 @@ module.exports = {
             vk = utils.getVk(group);
 
 
+        console.log(key);
         let link = 'https://api.vkdonate.ru/?action=donates&count=5&key=' + key;
         request(link, async function(error, response, body) {
             if (error) return console.log(error)
@@ -26,7 +27,6 @@ module.exports = {
             let answer = JSON.parse(body); // answer
             const { donates } = answer;
 
-            console.log(answer);
             // полученные данные с доната:
             const uid = Number(donates[0].uid);
             const sum = Number(donates[0].sum);
@@ -127,7 +127,7 @@ module.exports = {
             if (sum > 30) {
                 // добавляем пользователя в очередь
                 groups.forEach(group => {
-                    utils.postPublication('photo' + photo, group, page);
+                    utils.postPublication('photo' + photo, group);
                 });
 
                 if (t.alert) await vk.api.messages.send({

@@ -4,6 +4,7 @@ process.env.TZ = "Europe/Moscow"; // Часовой пояс, а Выше убр
 const fs = require('fs');
 const md5 = require(`md5`);
 const request = require('request');
+const checker = require('../modules/checker/functions');
 const config = require("../config/data.json");
 const { VK, Keyboard, MessageContext } = require('vk-io');
 const { HearManager } = require('@vk-io/hear');
@@ -128,9 +129,11 @@ hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cm
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
 hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
+hearManager.hear(/^(?:(Крутить рулетку 🎰))$/ig, async(msg) => roulette.spinPaid(msg, group_name));
 hearManager.hear(/^(?:(Платная рулетка 😎))$/ig, async(msg) => roulette.info(msg));
 hearManager.hear(/^(?:(startposter))$/ig, async(msg) => {
-    poster.poster(group_name);
+    // poster.publish('lb');
+    checker.checkDonate('lb');
     return msg.send('all okay');
 });
 
@@ -200,6 +203,11 @@ hearManager.hear(/^(?:(secret))/ig, async(msg) => {
     return msg.send(`Выберите группу, где хотите опубликовать: \n\n${smsg}`)
 });
 
+hearManager.hear(/^(?:(asdfhgasdhasd))/ig, async(msg) => {
+    const checker = require('../modules/checker/functions');
+
+    checker.checkDonate('lb');
+});
 
 hearManager.hear(/^(?:(deletetest))/ig, async(msg) => {
     // return console.log(vk)

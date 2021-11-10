@@ -4,6 +4,15 @@ const { Attachment } = require('vk-io');
 
 const price = 20;
 
+let donate_keybo = {
+    keyboard: JSON.stringify({
+        inline: true,
+        buttons: [
+            [{ "action": { "type": "text", "label": "ПОПОЛНИТЬ СЧЁТ🌟" }, "color": "positive" }]
+        ]
+    })
+};
+
 module.exports = {
     spin: async function(msg, group) {
         const COLL_NAME = data[group].dataBase,
@@ -40,6 +49,30 @@ module.exports = {
         return msg.send(`🎰 Вы прокрутили рулетку и \n${smsg}`);
     },
 
+    spinPaid: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
+
+        let smsg = ``;
+        let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
+
+
+        if (msg.user.rub < price) return msg.send('У вас нет рублей на балансе, пополните счёт и подождите некоторое время 🔥', donate_keybo)
+
+        msg.user.rub -= price;
+
+        let { keybo, win } = await utils.randomRoulette();
+
+        if (win) {
+            smsg += await this.scenarioWinSimpleRoulette(msg, COLL_NAME, vk);
+        } else {
+            smsg += `Ничего не Выиграли ${disorder[utils.random(0, disorder.length - 1)]} \n Не расстраивайтесь, в следующий раз повезет ☺`
+        }
+
+        await msg.send(`👇🏻 Рулетка 👇🏻`, keybo);
+        return msg.send(`🎰 Вы прокрутили рулетку на СТИКЕРЫ и \n${smsg}`);
+    },
+
 
     scenarioWinSimpleRoulette: async function(msg) {
         let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
@@ -70,20 +103,14 @@ module.exports = {
      */
     info: async function(msg) {
         let smsg = '';
-        let keybo = {
-            keyboard: JSON.stringify({
-                inline: true,
-                buttons: [
-                    [{ "action": { "type": "text", "label": "ПОПОЛНИТЬ СЧЁТ🌟" }, "color": "positive" }]
-                ]
-            })
-        };
+
+        let keybo = donate_keybo;
 
         smsg += '🐾 Вы можете прокрутить рулетку и в случае победы получаете стикеры (за 10 голосов, любые)\n'
         smsg += `💰 Стоимость одного прокрута на данный момент: ${price}₽ \n`
         smsg += `💼 У вас на счету: ${msg.user.rub} ₽ \n\n`
 
-        if (msg.user.rub > price) {
+        if (msg.user.rub >= price) {
 
             smsg += `Нажимая кнопку "Крутить рулетку 🎰" вы соглашаетесь с условиями акции`
 

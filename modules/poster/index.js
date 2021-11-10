@@ -9,7 +9,7 @@ module.exports = {
      * @param {*} group 
      * @returns 
      */
-    poster: async function(group) {
+    publish: async function(group) {
         let group_id = data[group].group_id,
             page = utils.getVk(group, 'page_token');
 
@@ -54,10 +54,11 @@ module.exports = {
      * @param {*} count 
      * @returns string - ID пользователя
      */
-    getBestInBalls: async function(group, count = 5) {
+    getBestInBalls: async function(group, count = 20) {
         const vk = utils.getVk(group);
         let people = await db().collection(data[group].dataBase).find({}).sort({ balance: -1 }).limit(count).toArray();
 
+        console.log(people);
         let peopleWithOpenPages = [];
         for (let man of people) {
             let [IUser] = await vk.api.users.get({ user_ids: man.vk });
@@ -69,6 +70,7 @@ module.exports = {
             }
         }
 
+        console.log(peopleWithOpenPages);
         return peopleWithOpenPages[0];
     },
     /**
@@ -84,6 +86,14 @@ module.exports = {
             vk.api.messages.send({ user_id: user_id, message: message, random_id: 0 });
             return true;
         } catch (error) {
+            // обнулим баллы суке:
+            db().collection("photo").updateOne({
+                vk: user_id
+            }, {
+                $set: {
+                    balance: 0,
+                }
+            })
             return error;
         }
     },
