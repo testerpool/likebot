@@ -21,7 +21,7 @@ module.exports = {
 
         let post_id = await page.api.wall.post({
             owner_id: -group_id,
-            message: this.generateMessage(),
+            message: this.generateMessage(better_id),
             attachments: photo,
         }).then(function(a) {
             return a.post_id;
@@ -101,8 +101,18 @@ module.exports = {
      * Генерирует рандомный текст поста
      * @returns string
      */
-    generateMessage: function() {
-        return '+9O 💙 и летим дальше 🌠';
-        // генерируем сообщение
+    generateMessage: function(user_id) {
+        let smile = require('../static/smile');
+
+        let love = smile.love[utils.random(0, smile.love.length - 1)];
+        let fruit = smile.fruit[utils.random(0, smile.fruit.length - 1)];
+        let message = [
+            `Хочешь так же в ЛТ? [id${user_id}|${love}] \n Берем только активных ${fruit}`,
+            `берем только вкусненьких [id${user_id}|${fruit}]`,
+            `лайк через несколько минут выберу в лт [id${user_id}|${love}]`,
+            `+9O [id${user_id}|${love}] и летим дальше 🌠`,
+        ]
+
+        return message[utils.random(0, message.length - 1)];
     },
 };

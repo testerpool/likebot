@@ -18,8 +18,6 @@ module.exports = {
             page = utils.getVk(group, 'page_token'),
             vk = utils.getVk(group);
 
-
-        console.log(key);
         let link = 'https://api.vkdonate.ru/?action=donates&count=5&key=' + key;
         request(link, async function(error, response, body) {
             if (error) return console.log(error)
