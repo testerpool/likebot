@@ -132,9 +132,9 @@ hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|�
 hearManager.hear(/^(?:(Крутить рулетку 🎰))$/ig, async(msg) => roulette.spinPaid(msg, group_name));
 hearManager.hear(/^(?:(Платная рулетка 😎))$/ig, async(msg) => roulette.info(msg));
 hearManager.hear(/^(?:(startposter))$/ig, async(msg) => {
-    // poster.publish('lb');
-    checker.checkDonate('lb');
-    return msg.send('all okay');
+    let test = poster.generateMessage(msg.senderId);
+    // checker.checkDonate('lb');
+    return msg.send(test);
 });
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => {

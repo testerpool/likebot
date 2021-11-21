@@ -154,10 +154,6 @@ module.exports = {
                 ]
             })
         }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
-
-        // добавляем в ЛТ, если есть баллы:
-        // this.checkBalance(t, group);
-
     },
 
     poll_vote_new: async function(obj, group) {
@@ -198,9 +194,6 @@ module.exports = {
                 ]
             })
         }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
-
-        // добавляем в ЛТ, если есть баллы:
-        this.checkBalance(t, group);
     },
     wall_post_new: async function(obj, group) {
         const vk = this.getVk(group),
@@ -296,53 +289,6 @@ module.exports = {
         });
 
     },
-    checkBalance: async function(t, group) {
-        const vk = this.getVk(group),
-            cgroup = data[group].group_id;
-
-        if (t.rub > 40 && !t.issued && !t.sticker && t.page == 0) {
-            if (t.alert) return vk.api.messages.send({
-                user_id: t.vk,
-                random_id: 0,
-                message: `💌 Вы пополнили больше 40 рублей на свой счёт и мы хотим подарить Вам стикеры в знак благодарности 💦`,
-                keyboard: JSON.stringify({
-                    inline: true,
-                    buttons: [
-                        [{ "action": { "type": "text", "label": "Уведомления 🔕" }, "color": "negative" }],
-                        [{ "action": { "type": "text", "label": "ВЫБРАТЬ СТИКЕР-ПАК 🐯" }, "color": "positive" }],
-                    ]
-                })
-            }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
-        }
-        if (t.balance >= t.price) {
-            t.balance -= t.price;
-            t.price = 500;
-
-            // this.sendToQueue(t.vk, cgroup);
-
-            const [userq] = await vk.api.users.get({ user_ids: t.vk, fields: "photo_id" });
-            let avatar = userq.photo_id; // получили фото с аватарки
-
-            this.postPublication(avatar, group);
-            this.setPhoto(avatar);
-
-            if (t.alert) return vk.api.messages.send({
-                user_id: t.vk,
-                random_id: 0,
-                message: `💌 Вы успешно накопили ${t.price} баллов на попадение в ЛТ, мы добавили Вас в очередь ✅ \n Скоро Вы будете на стеночке 💫`,
-                keyboard: JSON.stringify({
-                    inline: true,
-                    buttons: [
-                        [{ "action": { "type": "text", "label": "Уведомления 🔕" }, "color": "negative" }],
-                        [{ "action": { "type": "text", "label": "👤 Очередь" }, "color": "positive" }],
-                    ]
-                })
-            }).catch((error) => { console.log(`Ошибка при отправке сообщения: ${error}`) });
-
-            return true;
-        }
-        return false;
-    },
     giveBonus: function(msg, group) {
         const page = this.getVk(group, 'page_token'),
             cgroup = data[group].group_id,
@@ -371,7 +317,6 @@ module.exports = {
 
         let t = await this.dataBase(msg.senderId, group);
         msg.user = t;
-        this.checkBalance(t, group);
 
         // функции на каждый день
         let date = new Date().getDate();
