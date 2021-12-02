@@ -1,0 +1,44 @@
+{
+    "lb": {
+        "group_id": 165367966,
+        "page_token": "13ff0472ca38a3794276dc793305cb65e3593fae5aa210e51602fa0e8743b9332c8174dc8dad35d44efee",
+        "group_token": "016154bb794946f6ebbd090e15eb04238e9e71a3f1f4c43341c6c7aef2fb0f00201bf7854d78f7694c96c",
+        "widget_token": "7aea4b4465796aba399cbe11c5e01a965480698ac7664dab6e5aaf2bf536c604ba92422b7944c62eef14c",
+        "donate_app": "vk.com/app6471849_-165367966",
+        "donate_app_id": "6471849",
+        "donate_app_token": "654e5475b002a1f838de",
+        "dataBase": "users_lb"
+    },
+    "lt": {
+        "group_id": 164711863,
+        "page_token": "a72400238c13abeb35bb6c9c952a19e90f804a993c8aca0a2a097419fbbffdd8751a23ccb5f9cce6adf46",
+        "group_token": "e0b34d02aa66fcaed3f1b3b28a54f44406ef271e1b1abde987bf574d789cb80c519b7ef3218e1a6485107",
+        "widget_token": "7aea4b4465796aba399cbe11c5e01a965480698ac7664dab6e5aaf2bf536c604ba92422b7944c62eef14c",
+        "donate_app": "vk.com/app6471849_-164711863",
+        "donate_app_id": "6471849",
+        "donate_app_token": "c32ee659ef92dbb723a3",
+        "dataBase": "users_lt"
+    },
+    "fb": {
+        "group_id": 189152994,
+        "page_token": "13ff0472ca38a3794276dc793305cb65e3593fae5aa210e51602fa0e8743b9332c8174dc8dad35d44efee",
+        "group_token": "f2cde06b98acb3ae78da01403274bcea261d5a97e0df914cf338ee6fac3e02e96ff131fd76d903769c103",
+        "widget_token": "7aea4b4465796aba399cbe11c5e01a965480698ac7664dab6e5aaf2bf536c604ba92422b7944c62eef14c",
+        "donate_app": "vk.com/app6471849_-189152994",
+        "donate_app_id": "6471849",
+        "donate_app_token": "c32ee659ef92dbb723a3",
+        "dataBase": "users_fb"
+    },
+    "common": {
+        "report": 404,
+        "answer": 405,
+        "twidmkID": "0101101",
+        "groups": [
+            165367966, 164711863, 109847065, 33879877, 52695815, 51318460, 61379580, 168009141, 133171419, 165790945,
+            173987637, 108685267, 173616518, 162566290, 164711863, 186509053, 189152994, 189639950, 184252997,
+            123964281, 169444683, 171139006, 141480198, 195548131, 158276973, 194973582, 185031998, 186708235,
+            190499549, 194581849, 150868896, 195593064, 192720192, 203888770, 164240783, 190686783, 202292307,
+            190213056, 202862330, 194821431, 194776642, 198300127
+        ]
+    }
+}

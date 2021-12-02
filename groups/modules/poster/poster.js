@@ -20,8 +20,8 @@ setTimeout(() => {
     poster.publish('lb');
 }, 10000);
 
-cron.schedule(`0 *  *  *  *`, () => {
-    poster.publish('lb');
-    poster.publish('lt');
-    poster.publish('fb');
-});
+// cron.schedule(`0 *  *  *  *`, () => {
+// poster.publish('lb');
+// poster.publish('lt');
+// poster.publish('fb');
+// });

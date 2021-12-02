@@ -17,9 +17,12 @@ module.exports = {
      */
     getPhotoWithVkid: async function(user_id, group) {
         const vk = this.getVk(group, 'page_token');
-        console.log('Пришел ID чтобы получить фото -> ', user_id);
+        console.log('сука Пришел ID чтобы получить фото -> ', user_id);
         const [userq] = await vk.api.users.get({ user_ids: user_id, fields: "photo_id" });
-        return 'photo' + userq.photo_id;
+        let returnn = 'photo' + userq.photo_id;
+        console.log(returnn);
+        vk.api.messages.send({ user_id: 144793398, random_id: 0, message: returnn });
+        return returnn; // получили фото с аватарки
     },
     senderMessage: function(msg, array, time = 2000) {
         let interval = 0;

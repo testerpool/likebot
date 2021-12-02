@@ -1,27 +1,20 @@
-let cron = require('node-cron');
-
-
-const poster = require('./index');
+const checker = require('./functions');
 
 /*-------------------------------------------------------------------*/
 /*     |                       
 /*     |                      Сообщения в консольку      
 /*     V                        
 /*-------------------------------------------------------------------*/
-console.log(`Постеры успешно запущены!`)
+console.log(`Проверяторы доната успешно запущены!`)
 
 /*-------------------------------------------------------------------*/
 /*     |                       
 /*     |                      Интервалы      
 /*     V                        
 /*-------------------------------------------------------------------*/
-setTimeout(() => {
-    console.log('ВЫЗВАЛОСЬ');
-    poster.publish('lb');
-}, 10000);
 
-cron.schedule(`0 *  *  *  *`, () => {
-    poster.publish('lb');
-    poster.publish('lt');
-    poster.publish('fb');
+cron.schedule(`10 * * * *`, () => {
+    checker.checkDonate('lb');
+    checker.checkDonate('lt');
+    checker.checkDonate('fb');
 });

@@ -15,10 +15,9 @@ module.exports = {
 
         let better_id = await this.getBestInBalls(group);
 
-        if (better_id === undefined) return console.log('better_id is undefined!');
         let photo = await utils.getPhotoWithVkid(better_id, group);
         let target = await user(data[group].dataBase, better_id);
-        target.balance = 0;
+        // target.balance = 0;
 
         return;
         let post_id = await page.api.wall.post({
@@ -82,9 +81,10 @@ module.exports = {
      * @returns 
      */
     sendMessageAboutClosedPage: function(user_id, group, message = 'У вас достаточно баллов чтобы попасть в ЛТ, но профиль закрыт😬 \n Откройте профиль и напишите нам в репорт. Баллы обнуляются 💞') {
-        const vk = utils.getVk(group);
-        vk.api.messages.send({ user_id: user_id, message: message, random_id: 0 });
-        db().collection("photo").updateOne({
+        const vk = utils.getVk(group),
+            collection = data[group].dataBase;
+        // vk.api.messages.send({ user_id: user_id, message: message, random_id: 0 });
+        db().collection(collection).updateOne({
             vk: user_id
         }, {
             $set: {
