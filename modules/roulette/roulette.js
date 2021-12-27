@@ -1,8 +1,6 @@
 let utils = require('../utils');
 const data = require('../../config/data.json');
-const { Attachment } = require('vk-io');
-
-const price = 20;
+const prices = require('./price.json');
 
 let donate_keybo = {
     keyboard: JSON.stringify({
@@ -14,67 +12,36 @@ let donate_keybo = {
 };
 
 module.exports = {
-    spin: async function(msg, group) {
-        const COLL_NAME = data[group].dataBase,
-            vk = utils.getVk(group);
-
+    menu: function(msg) {
+        let keybo = this.getMenu(msg);
+        return msg.send('Вы перешли в режим рулетки 🎰', keybo);
+    },
+    freeSpin: async function(msg) {
         let smsg = ``;
         let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
-        let time = msg.user.roulette - Date.now(); // Формула которая считает конец времени VIP
+        let time = msg.user.roulette - Date.now();
 
-        let keybo_paid = {
-            keyboard: JSON.stringify({
-                inline: true,
-                buttons: [
-                    [{ "action": { "type": "text", "label": "Платная рулетка 😎" }, "color": "primary" }]
-                ]
-            })
-        }
 
-        if (time > 1) return msg.send(`❌ Бесплатно крутить рулетку можно раз в 20 часов 💎\n\n
-        💦 У [id${msg.user.vk}|Вас] время ещё не прошло \n ⌛ Осталось: ${utils.unixStampLeft(time)}`, keybo_paid);
+        if (time > 1) return msg.send(`❌ Бесплатно крутить рулетку можно раз в 8 часов 💎\n\n
+        💦 У [id${msg.user.vk}|Вас] время ещё не прошло \n ⌛ Осталось: ${utils.unixStampLeft(time)}`);
         let { keybo, win } = await utils.randomRoulette();
 
-        msg.user.roulette = utils.getUnix() + 72000000;
+        msg.user.roulette = utils.getUnix() + 28800000;
 
         if (win) {
-            smsg += await this.scenarioWinSimpleRoulette(msg, COLL_NAME, vk);
+            smsg += await this.scenarioWinFreeRoulette(msg);
         } else {
             smsg += `Ничего не Выиграли ${disorder[utils.random(0, disorder.length - 1)]} \n Не расстраивайтесь, попробуйте позже ⌛`
         }
 
 
+        let menu = this.getMenu(msg);
 
         await msg.send(`👇🏻 Рулетка 👇🏻`, keybo);
-        return msg.send(`🎰 Вы прокрутили рулетку и \n${smsg}`);
+        return msg.send(`🎰 Вы прокрутили рулетку и \n${smsg}`, menu);
     },
 
-    spinPaid: async function(msg, group) {
-        const COLL_NAME = data[group].dataBase,
-            vk = utils.getVk(group);
-
-        let smsg = ``;
-        let disorder = ["🙄", "😬", "🤐", "🤔", "😧", "😨"];
-
-
-        if (msg.user.rub < price) return msg.send('У вас нет рублей на балансе, пополните счёт и подождите некоторое время 🔥', donate_keybo)
-
-        msg.user.rub -= price;
-
-        let { keybo, win } = await utils.randomRoulette();
-
-        if (win) {
-            smsg += await this.scenarioWinSimpleRoulette(msg, COLL_NAME, vk);
-        } else {
-            smsg += `Ничего не Выиграли ${disorder[utils.random(0, disorder.length - 1)]} \n Не расстраивайтесь, в следующий раз повезет ☺`
-        }
-
-        await msg.send(`👇🏻 Рулетка 👇🏻`, keybo);
-        return msg.send(`🎰 Вы прокрутили рулетку на СТИКЕРЫ и \n${smsg}`);
-    },
-
-
-    scenarioWinSimpleRoulette: async function(msg) {
+    scenarioWinFreeRoulette: async function(msg) {
         let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
         let smsg = '';
         // Рандомайзер
@@ -83,6 +50,59 @@ module.exports = {
         let rand_ball = utils.random(3, 20);
 
         smsg += `Сорвали ДЖЕКПОТ ${smile[utils.random(0, smile.length - 1)]} \n`;
+        if (rand <= 90) {
+            smsg += `+ ${rand_ball} баллов 🌟`
+            msg.user.balance += parseFloat(rand_ball);
+            msg.user.points += parseFloat(rand_ball);
+        }
+        if (rand > 90) {
+            smsg += `+ ${rand_rub} рублей ₽`
+            msg.user.rub += parseFloat(rand_rub);
+        }
+
+        return smsg;
+    },
+
+    scenarioWinForFiveVotes: async function(msg) {
+        let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
+        let smsg = '';
+        // Рандомайзер
+
+        smsg += `👉🏻 ПОБЕДИЛИ ${smile[utils.random(0, smile.length - 1)]} \n`;
+
+        smsg += `Выбирайте любой стикер за 5 голосов и сообщите нам его название 🐯\n`;
+
+        smsg += 'Мы ждём Вашего ответа в репорт 🆘\n';
+
+        this.sendMessageAboutWinner(msg, 'five');
+
+        return smsg;
+    },
+
+    scenarioWinForTenVotes: async function(msg) {
+        let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
+        let smsg = '';
+        // Рандомайзер
+
+        smsg += `👉🏻 ПОБЕДИЛИ ${smile[utils.random(0, smile.length - 1)]} \n`;
+
+        smsg += '🎁 Сейчас мы пришлем Вам подарочек - ЗОЛОТУЮ КОРОБКУ СО СТИКЕРАМИ 📦\n';
+
+        this.sendMessageAboutWinner(msg, 'ten');
+
+        return smsg;
+    },
+
+    scenarioLossForRubles: async function(msg) {
+        let smile = ["🙀", "😻", "😎", "😱", "😳", "🤑", "🤩"];
+        let smsg = '';
+        // Рандомайзер
+        let rand = utils.random(1, 100)
+        let rand_rub = utils.random(1, 5);
+        let rand_ball = utils.random(30, 200);
+
+        smsg += `👉🏻 К сожалению стикеры вы не выиграли, но без подарка вы не останетесь ${smile[utils.random(0, smile.length - 1)]} \n`;
+        smsg += '🎁 Мы дарим Вам \n\n'
         if (rand <= 90) {
             smsg += `+ ${rand_ball} баллов 🌟`
             msg.user.balance += parseFloat(rand_ball);
@@ -126,5 +146,122 @@ module.exports = {
 
         await msg.send(`🐯 Рулетка на стикеры: \n\n ${smsg}`, { attachment: 'photo-165367966_457251669' });
         return msg.send('💦', keybo);
+    },
+
+    spinCaseForFiveVotes: async function(msg) {
+        let smsg = ``;
+
+        let price = prices['five'];
+        if (msg.user.rub < price) return msg.send('У вас нет рублей на балансе, пополните счёт и подождите некоторое время 🔥', donate_keybo)
+
+        msg.user.rub -= price;
+
+        let { keybo, win } = await utils.randomRoulette();
+
+        let menu = this.getMenu(msg);
+
+        if (win) {
+            menu = {
+                keyboard: JSON.stringify({
+                    inline: false,
+                    buttons: [
+                        [{ "action": { "type": "text", "label": "🆘 Репорт" }, "color": "negative" }],
+                        [{ "action": { "type": "text", "label": "Назад 🔙" }, "color": "secondary" }]
+                    ]
+                })
+            };
+
+            smsg += await this.scenarioWinForFiveVotes(msg);
+        } else {
+            smsg += await this.scenarioLossForRubles(msg);
+        }
+
+        await msg.send(`👇🏻 Рулетка 👇🏻`, keybo);
+        return msg.send(`🎰 Вы прокрутили рулетку на СТИКЕРЫ и \n${smsg}`, menu);
+    },
+
+    spinCaseForTenVotes: async function(msg) {
+        let smsg = ``;
+
+        let price = prices['ten'];
+
+        if (msg.user.rub < price) return msg.send('У вас нет рублей на балансе, пополните счёт и подождите некоторое время 🔥', donate_keybo)
+
+        msg.user.rub -= price;
+
+        let { keybo, win } = await utils.randomRoulette();
+
+        let menu = this.getMenu(msg);
+
+        if (win) {
+            smsg += await this.scenarioWinForTenVotes(msg);
+        } else {
+            smsg += await this.scenarioLossForRubles(msg);
+        }
+
+        await msg.send(`👇🏻 Рулетка 👇🏻`, keybo);
+        return msg.send(`🎰 Вы прокрутили рулетку на СТИКЕРЫ и \n${smsg}`, menu);
+    },
+
+    /**
+     * Получить клавиатуру меню
+     * @param {*} msg 
+     * @returns 
+     */
+    getMenu: function(msg) {
+        let time = msg.user.roulette - Date.now(),
+            priceForFiveVotes = prices['five'],
+            priceForTenVotes = prices['ten'];
+
+
+        let free = { "action": { "type": "text", "label": "БЕСПЛАТНАЯ 🆓" }, "color": "positive" },
+            keyboFiveVotes = { "action": { "type": "text", "label": "СТИКЕРЫ ЗА 5 ГOЛOСOВ 🐾" }, "color": "primary" },
+            keyboTenVotes = { "action": { "type": "text", "label": "СТИКЕРЫ ЗА 1O ГOЛOСOВ 🐯" }, "color": "primary" };
+
+        if (time > 1) {
+            free = { "action": { "type": "text", "label": "бесплатная ❎" }, "color": "negative" };
+        }
+
+        if (msg.user.rub >= priceForFiveVotes) {
+            keyboFiveVotes = { "action": { "type": "text", "label": "СТИКЕРЫ ЗА 5 ГOЛOСOВ 🐾" }, "color": "positive" };
+        }
+
+        if (msg.user.rub >= priceForTenVotes) {
+            keyboTenVotes = { "action": { "type": "text", "label": "СТИКЕРЫ ЗА 1O ГOЛOСOВ 🐯" }, "color": "positive" };
+        }
+
+        return {
+            keyboard: JSON.stringify({
+                inline: false,
+                buttons: [
+                    [free],
+                    [keyboFiveVotes],
+                    [keyboTenVotes],
+
+                    [{ "action": { "type": "text", "label": "Назад 🔙" }, "color": "secondary" }]
+                ]
+            })
+        };
+    },
+
+    sendMessageAboutWinner: function(msg, type) {
+        let vk = utils.getVk('lb');
+
+        if (type == 'five') {
+            vk.api.messages.send({
+                chat_id: 14,
+                random_id: 0,
+                message: `🎰 @id${msg.user.vk} прокрутил рулетку на 5 голосов и победил ✅`,
+            });
+        }
+
+        if (type == 'ten') {
+            vk.api.messages.send({
+                chat_id: 14,
+                random_id: 0,
+                message: `🎰 @id${msg.user.vk} прокрутил рулетку на 1O голосов и победил ✅ \n Золотая коробочка 📦`,
+            });
+        }
+
     }
 }

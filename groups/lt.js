@@ -129,7 +129,7 @@ hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.fu
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
-hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.freeSpin(msg, group_name));
 
 
 hearManager.hear(/^(?:(Уведомления 🔕|Уведомления 🔔|увед[ао]млени[ея]))$/ig, async(msg) => cmd.alert(msg));
@@ -148,6 +148,7 @@ hearManager.hear(/^(?:(givemoder))/ig, async(msg) => cmd.giveModer(msg, group_na
 hearManager.hear(/^(?:(givevip))/ig, async(msg) => cmd.giveVip(msg, group_name));
 hearManager.hear(/^(?:(добавить))/ig, async(msg) => cmd.addPhoto(msg, group_name));
 hearManager.hear(/^(?:(givebalance))/ig, async(msg) => cmd.givebalance(msg, group_name));
+hearManager.hear(/^(?:(giverub))/ig, async(msg) => cmd.giverub(msg, group_name));
 hearManager.hear(/^(updatedb)/ig, async(msg) => cmd.updatedb(msg, group_name));
 hearManager.hear(/^(!личка)/ig, async(msg) => {
     if (msg.user.permission < 5) return msg.send(`❌ у Вас нет прав на эту команду!`);

@@ -20,7 +20,6 @@ module.exports = {
         let target = await user(data[group].dataBase, better_id);
         target.balance = 0;
 
-        return;
         let post_id = await page.api.wall.post({
             owner_id: -group_id,
             message: this.generateMessage(better_id),
@@ -84,13 +83,13 @@ module.exports = {
     sendMessageAboutClosedPage: function(user_id, group, message = 'У вас достаточно баллов чтобы попасть в ЛТ, но профиль закрыт😬 \n Откройте профиль и напишите нам в репорт. Баллы обнуляются 💞') {
         const vk = utils.getVk(group);
         vk.api.messages.send({ user_id: user_id, message: message, random_id: 0 });
-        db().collection("photo").updateOne({
-            vk: user_id
-        }, {
-            $set: {
-                balance: 0,
-            }
-        })
+        // db().collection("photo").updateOne({
+        //     vk: user_id
+        // }, {
+        //     $set: {
+        //         balance: 0,
+        //     }
+        // })
 
         return true;
     },

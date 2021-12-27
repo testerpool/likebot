@@ -14,7 +14,6 @@ const page = new VK({ token: config.fb.page_token });
 const cgroup = config.fb.group_id;
 const ctoken = config.fb.group_token;
 
-// имена в базе данных
 const COLL_NAME = config.fb.dataBase; // имя коллекции
 
 // ключ

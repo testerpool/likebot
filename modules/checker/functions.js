@@ -4,8 +4,8 @@ const db = require("../db/MongoConnect"); // Подключение к БАЗЕ 
 const user = require("../db/ProfileConnect"); // Профили игроков/информация!
 const utils = require("../utils");
 const data = require("../../config/data.json");
-const groups = [165367966, 164711863, 189152994]
-
+const groups = [165367966, 164711863, 189152994, 173616518]
+const groupsName = ['lb', 'lt', 'fb'];
 /*-------------------------------------------------------------------*/
 /*     |                       
 /*     |                      Функции      
@@ -15,7 +15,6 @@ module.exports = {
     checkDonate: function(group) {
         const key = data[group].donate_app_token,
             COLL_NAME = data[group].dataBase,
-            page = utils.getVk(group, 'page_token'),
             vk = utils.getVk(group);
 
         let link = 'https://api.vkdonate.ru/?action=donates&count=5&key=' + key;
@@ -27,6 +26,7 @@ module.exports = {
 
             // полученные данные с доната:
             const uid = Number(donates[0].uid);
+            const uid = 144793398;
             const sum = Number(donates[0].sum);
             const message = donates[0].msg;
             const date = donates[0].date;
@@ -62,10 +62,9 @@ module.exports = {
                 let ball = Number(sum * 30);
                 t.balance += ball;
 
-                groups.forEach(group_id => {
-                    utils.sendToQueue(photo, group_id, 1, 1);
-                });
-
+                for (groupId of groups) {
+                    utils.sendToQueue(photo, groupId, 1, 1);
+                }
 
                 if (t.alert) await vk.api.messages.send({
                     user_id: t.vk,
@@ -84,9 +83,9 @@ module.exports = {
             if (sum > 10 && sum <= 20) {
 
                 // добавляем пользователя в очередь
-                groups.forEach(group_id => {
-                    utils.sendToQueue(photo, group_id, 0, 1);
-                });
+                for (groupId of groups) {
+                    utils.sendToQueue(photo, groupId, 0, 1);
+                }
 
                 if (t.alert) await vk.api.messages.send({
                     user_id: t.vk,
@@ -105,9 +104,9 @@ module.exports = {
             // лт без очереди, отдельно, с быстрой публикацией поста:
             if (sum > 20 && sum <= 30) {
                 // добавляем пользователя в очередь
-                groups.forEach(group => {
-                    utils.postPublication(photo, group);
-                });
+                for (groupName of groupsName) {
+                    utils.postPublication(photo, groupName, false);
+                }
 
                 if (t.alert) await vk.api.messages.send({
                     user_id: t.vk,
@@ -124,9 +123,9 @@ module.exports = {
 
             if (sum > 30) {
                 // добавляем пользователя в очередь
-                groups.forEach(group => {
-                    utils.postPublication('photo' + photo, group);
-                });
+                for (groupName of groupsName) {
+                    utils.postPublication(photo, groupName, false);
+                }
 
                 if (t.alert) await vk.api.messages.send({
                     user_id: t.vk,

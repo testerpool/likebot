@@ -13,13 +13,16 @@ module.exports = {
      * Получить фото (аватарку) по ID пользователя
      * @param {*} user_id 
      * @param {*} group 
+     * @param {*} prefix - с префиксом "photo" или без
      * @returns string - photo000_111
      */
-    getPhotoWithVkid: async function(user_id, group) {
+    getPhotoWithVkid: async function(user_id, group, prefix = true) {
         const vk = this.getVk(group, 'page_token');
         console.log('Пришел ID чтобы получить фото -> ', user_id);
         const [userq] = await vk.api.users.get({ user_ids: user_id, fields: "photo_id" });
-        return 'photo' + userq.photo_id;
+
+        if (prefix) return 'photo' + userq.photo_id;
+        return userq.photo_id;
     },
     senderMessage: function(msg, array, time = 2000) {
         let interval = 0;
@@ -94,17 +97,21 @@ module.exports = {
         })
 
     },
-    postPublication: async function(photo, group) {
+    postPublication: async function(photo, group, addWordPhotoToLink = true) {
         let cgroup = data[group].group_id,
             page = this.getVk(group, 'page_token');
 
         let message = ["лайк через несколько минут выберу в лт 😍❤", "оуоуоу лайкаем постик и попадаем в лт в 2 раза чаще ✨\n🌿лайкнул(-а)? \n пиши в комменты (p.s. некоторых возьму в закреп)🥰🤫"]
 
-        console.log('Пришли данные' + photo);
+        if (addWordPhotoToLink) {
+            photo = 'photo' + photo;
+        }
+
+        console.log('Пришли данные ' + photo);
         return page.api.wall.post({
             owner_id: -cgroup,
             message: message[this.random(0, message.length - 1)],
-            attachments: 'photo' + photo,
+            attachments: photo,
         }).then(a => {
             console.log(a);
             return `vk.com/wall-${cgroup}_${a.post_id}`

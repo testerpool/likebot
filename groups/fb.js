@@ -128,7 +128,13 @@ hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.fu
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
-hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
+// рулетка:
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.menu(msg, group_name));
+hearManager.hear(/^(?:(БЕСПЛАТНАЯ 🆓|бесплатная ❎|free|бе[зс]пла[тд]н[ао]))$/ig, async(msg) => roulette.freeSpin(msg, group_name));
+hearManager.hear(/^(?:(СТИКЕРЫ ЗА 5 ГOЛOСOВ 🐾))$/ig, async(msg) => roulette.spinCaseForFiveVotes(msg));
+hearManager.hear(/^(?:(СТИКЕРЫ ЗА 1O ГOЛOСOВ 🐯))$/ig, async(msg) => roulette.spinCaseForTenVotes(msg));
+hearManager.hear(/^(?:(Крутить рулетку 🎰))$/ig, async(msg) => roulette.spinPaid(msg, group_name));
+hearManager.hear(/^(?:(Платная рулетка 😎))$/ig, async(msg) => roulette.info(msg));
 
 
 hearManager.hear(/^(?:(Уведомления 🔕|Уведомления 🔔|увед[ао]млени[ея]))$/ig, async(msg) => cmd.alert(msg));
@@ -147,6 +153,7 @@ hearManager.hear(/^(?:(givemoder))/ig, async(msg) => cmd.giveModer(msg, group_na
 hearManager.hear(/^(?:(givevip))/ig, async(msg) => cmd.giveVip(msg, group_name));
 hearManager.hear(/^(?:(добавить))/ig, async(msg) => cmd.addPhoto(msg, group_name));
 hearManager.hear(/^(?:(givebalance))/ig, async(msg) => cmd.givebalance(msg, group_name));
+hearManager.hear(/^(?:(giverub))/ig, async(msg) => cmd.giverub(msg, group_name));
 hearManager.hear(/^(mailing)/ig, async(msg) => cmd.mailing(msg, group_name));
 hearManager.hear(/^(updatedb)/ig, async(msg) => cmd.updatedb(msg, group_name));
 
@@ -155,21 +162,21 @@ hearManager.hear(/^(?:(Репорт 🆘|репорт|баг|пр[ие]дл[ао
 hearManager.hear(/^(?:(🆘 Репорт))$/ig, async(msg) => cmd.report(msg, group_name));
 hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, group_name));
 
-hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => { // меню
-
-
+hearManager.hear(/^(?:(с[еи]кр[еи]т))$/ig, async(msg) => {
     let smsg = ``;
-    // utils.updateWidget(tokenWidget, COLL_NAME);
 
     smsg += `🌟 Не забудь на меня подписаться! 🌟\n`
-    smsg += `Если ты себя сегодня не увидешь на стене - считай что я балабол 💠\n`
 
     if (msg.user.quest) return msg.send(`Я тебя уже кидал на стенку.. Проявляй активность и я возьму тебя ещё!`);
 
     msg.user.quest = true;
 
-    utils.createPostFB(msg.senderId, cgroup, page);
-    return msg.send(`хорошо, я добавлю тебя на стенку в ближайшее время 😼\n\n${smsg}`);
+    let photo = await utils.getPhotoWithVkid(msg.user.vk, group_name, false);
+    let post = await utils.postPublication(photo, group_name);
+
+    smsg += `${post}`;
+
+    return msg.send(`хорошо, отправляю тебя на стенку 😼\n\n${smsg}`);
 });
 
 updates.on('message_event', async(obj) => {

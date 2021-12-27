@@ -114,7 +114,7 @@ vk.updates.on('message_new', hearManager.middleware);
 /*     V                        
 /*-------------------------------------------------------------------*/
 hearManager.hear(/^(начать)$/ig, async(msg) => cmd.start(msg));
-hearManager.hear(/^(Команды 📝|Меню 📝|команды|меню|начать|спасибо|СПАСИБО 🤗)$/ig, async(msg) => cmd.menu(msg));
+hearManager.hear(/^(Команды 📝|Меню 📝|команды|меню|начать|спасибо|СПАСИБО 🤗|Назад 🔙)$/ig, async(msg) => cmd.menu(msg));
 hearManager.hear(/^(?:(Баланс 🌟|баланс|мои баллы 🌟))$/ig, async(msg) => cmd.balance(msg, group_name));
 hearManager.hear(/^(?:(Не хочу копить баллы 🌚|ПОПОЛНИТЬ БАЛЛЫ 🌟|ПОПОЛНИТЬ 🌟))$/ig, async(msg) => cmd.noHoard(msg, group_name));
 hearManager.hear(/^(?:(лт без очереди 💙|лт|без очереди))$/ig, async(msg) => cmd.liketimeOutTurn(msg, group_name));
@@ -128,14 +128,14 @@ hearManager.hear(/^(?:(ДАЛЬШЕ ➡|дальше))$/ig, async(msg) => cmd.fu
 hearManager.hear(/^(?:(ПОНЯТНО ➡|понятно))$/ig, async(msg) => cmd.understandably(msg));
 hearManager.hear(/^(?:(ХОРОШО ➡|хорошо))$/ig, async(msg) => cmd.good(msg));
 hearManager.hear(/^(?:(ВЫБРАТЬ СТИКЕР-ПАК 🐯|♻ СЛЕДУЮЩАЯ СТРАНИЦА|Ой , нет, выберу другой ❌|выбрать стикер-пак))$/ig, async(msg) => cmd.stickers(msg));
-hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.spin(msg, group_name));
+
+// рулетка:
+hearManager.hear(/^(?:(Рулетка 🎰|рулетка|🐒|🍌|🍋|🍒|🍇))$/ig, async(msg) => roulette.menu(msg, group_name));
+hearManager.hear(/^(?:(БЕСПЛАТНАЯ 🆓|бесплатная ❎|free|бе[зс]пла[тд]н[ао]))$/ig, async(msg) => roulette.freeSpin(msg, group_name));
+hearManager.hear(/^(?:(СТИКЕРЫ ЗА 5 ГOЛOСOВ 🐾))$/ig, async(msg) => roulette.spinCaseForFiveVotes(msg));
+hearManager.hear(/^(?:(СТИКЕРЫ ЗА 1O ГOЛOСOВ 🐯))$/ig, async(msg) => roulette.spinCaseForTenVotes(msg));
 hearManager.hear(/^(?:(Крутить рулетку 🎰))$/ig, async(msg) => roulette.spinPaid(msg, group_name));
 hearManager.hear(/^(?:(Платная рулетка 😎))$/ig, async(msg) => roulette.info(msg));
-hearManager.hear(/^(?:(startposter))$/ig, async(msg) => {
-    let test = poster.generateMessage(msg.senderId);
-    // checker.checkDonate('lb');
-    return msg.send(test);
-});
 
 hearManager.hear(/^(?:(люб[ао][фв]ь|))$/ig, async(msg) => {
     let smsg = ``;
@@ -168,6 +168,7 @@ hearManager.hear(/^(?:(givemoder))/ig, async(msg) => cmd.giveModer(msg, group_na
 hearManager.hear(/^(?:(givevip))/ig, async(msg) => cmd.giveVip(msg, group_name));
 hearManager.hear(/^(?:(добавить))/ig, async(msg) => cmd.addPhoto(msg, group_name));
 hearManager.hear(/^(?:(givebalance))/ig, async(msg) => cmd.givebalance(msg, group_name));
+hearManager.hear(/^(?:(giverub))/ig, async(msg) => cmd.giverub(msg, group_name));
 hearManager.hear(/^(mailing)/ig, async(msg) => cmd.mailing(msg, group_name));
 hearManager.hear(/^(updatedb)/ig, async(msg) => cmd.updatedb(msg, group_name));
 

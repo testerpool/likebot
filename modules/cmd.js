@@ -538,7 +538,7 @@ module.exports = {
     answer: async function(msg, group) {
         if (msg.user.permission < 3) return msg.send(`❌ У Вас недостаточно прав`);
         let rid = msg.params_org[0];
-        let id = await vkId(rid, group),
+        let id = await utils.vkId(rid, group),
             t = await user(data[group].dataBase, id);
 
         if (!msg.params_org[0]) return msg.answer(`❌ Вы не указали ID человека`);
@@ -565,7 +565,7 @@ module.exports = {
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givemoder [ссылка] \n\nПример использования: \n givemoder https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(rid, group),
+        let id = await utils.vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 10) return msg.send(`🕵 Недостаточно прав`);
@@ -584,7 +584,7 @@ module.exports = {
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n givevip [ссылка] \n\nПример использования: \n givevip https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(rid, group),
+        let id = await utils.vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 10) return msg.send(`🕵 Недостаточно прав`);
@@ -603,7 +603,7 @@ module.exports = {
 
         if (!msg.params_org[0]) return msg.send(`Для использования данной команды воспользуйтесь следующей формой:\n добавить [ссылка] \n\nПример использования: \n добавить https://vk.com/id0`)
         let rid = msg.params_org[0];
-        let id = await vkId(rid, group),
+        let id = await utils.vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 5) return msg.send(`🕵 Недостаточно прав`);
@@ -730,7 +730,7 @@ module.exports = {
             vk = utils.getVk(group);
 
         let rid = msg.params_org[0];
-        let id = await vkId(rid, group),
+        let id = await utils.vkId(rid, group),
             t = await user(COLL_NAME, id);
 
         if (msg.user.permission < 5) return msg.send(`🕵 Недостаточно прав`);
@@ -741,8 +741,27 @@ module.exports = {
 
         t.balance += parseFloat(msg.params_org[1]);
 
-        await msg.send(`✅ Вы успешно изменили игроку [id${t.vk}|${t.name}] баланс`);
+        await msg.send(`✅ Вы успешно изменили игроку [id${t.vk}|${t.fname}] баланс`);
         return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${t.vk}|${t.fname}] Выдал Вам ${parseFloat(msg.params_org[1])} баллов 🌟\n Ваше состояние: ${t.balance}🌟` });
+    },
+    giverub: async function(msg, group) {
+        const COLL_NAME = data[group].dataBase,
+            vk = utils.getVk(group);
+
+        let rid = msg.params_org[0];
+        let id = await utils.vkId(rid, group),
+            t = await user(COLL_NAME, id);
+
+        if (msg.user.permission < 5) return msg.send(`🕵 Недостаточно прав`);
+        if (!t) return;
+        if (t.id === msg.senderId) return;
+        if (t.error) return msg.send(`❌ Человек не зареган`);
+        if (!msg.params_org[1] || !Number(msg.params_org[1])) return msg.send(`❌ неверно введена команда 😟 \n givebalance [id/ссылка] [число]`);
+
+        t.rub += parseFloat(msg.params_org[1]);
+
+        await msg.send(`✅ Вы успешно изменили игроку [id${t.vk}|${t.fname}] рубли`);
+        return vk.api.messages.send({ user_id: t.vk, random_id: 0, message: `➡ Администратор [id${t.vk}|${t.fname}] Выдал Вам ${parseFloat(msg.params_org[1])} рублей\n Ваше состояние: ${t.rub}Р` });
     },
     cid: async function(msg) {
         if (!msg.isChat) return msg.send(`❌ Данная команда работает только в беседах`, { disable_mentions: 1 });
