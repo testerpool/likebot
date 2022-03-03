@@ -179,8 +179,6 @@ hearManager.hear(/^(?:(ответ))/ig, async(msg) => cmd.answer(msg, group_name
 
 
 hearManager.hear(/^(?:(secret))/ig, async(msg) => {
-
-
     let smsg = ``;
 
     if (msg.user.permission < 5) return msg.send(`Нет прав`);
@@ -204,7 +202,69 @@ hearManager.hear(/^(?:(secret))/ig, async(msg) => {
     return msg.send(`Выберите группу, где хотите опубликовать: \n\n${smsg}`)
 });
 
-hearManager.hear(/^(?:(asdfhgasdhasd))/ig, async(msg) => {
+hearManager.hear(/^(?:(Рандомный 🏅|р[ао]нд[ао]мн[иы]й))/ig, async(msg) => {
+    if (msg.user.balance < 100) return msg.send(`У Вас недостаточно баллов. Необходимо: 100, у Вас: ${msg.user.balance} 🌟`);
+
+    msg.user.balance -= 100;
+
+    utils.sendToQueue(msg.user.vk, config[lb].cgroup);
+});
+
+hearManager.hear(/^(?:(м[ао]г[ао]зин|Магазин 🛍))/ig, async(msg) => {
+
+
+    return msg.send({
+        message: `Здесь можно попасть на стенку и получить 💛 за баллы 🌟 \n У вас есть ${msg.user.balance} баллов 🌟`,
+        template: JSON.stringify({
+            type: "carousel",
+            elements: [{
+                    "title": "Рандомный в посту",
+                    "description": "💵 Стоимость: 100 🌟\n💬 Публикует в рандомное место",
+                    "photo_id": "-165367966_457251755",
+                    "action": {
+                        "type": "open_photo"
+                    },
+                    "buttons": [{
+                        "action": {
+                            "type": "text",
+                            "label": "Рандомный 🏅",
+                            "payload": "{}"
+                        }
+                    }]
+                },
+                {
+                    "title": "Первый в посту",
+                    "description": "💵 Стоимость: 300 🌟\n💬 Публикует на первое место",
+                    "photo_id": "-165367966_457251756",
+                    "action": {
+                        "type": "open_photo"
+                    },
+                    "buttons": [{
+                        "action": {
+                            "type": "text",
+                            "label": "Первый 🥇",
+                            "payload": "{}"
+                        }
+                    }]
+                },
+                {
+                    "title": "Отдельный в посту",
+                    "description": "💵 Стоимость: 500 🌟\n💬 Публикует только одно фото",
+                    "photo_id": "-165367966_457251757",
+                    "action": {
+                        "type": "open_photo"
+                    },
+                    "buttons": [{
+                        "action": {
+                            "type": "text",
+                            "label": "Отдельный 🏆",
+                            "payload": "{}"
+                        }
+                    }]
+                }
+            ]
+        })
+    });
     const checker = require('../modules/checker/functions');
 
     checker.checkDonate('lb');

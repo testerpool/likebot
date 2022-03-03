@@ -25,9 +25,10 @@ module.exports = {
             const { donates } = answer;
 
             // полученные данные с доната:
-            const uid = Number(donates[0].uid);
+            // const uid = Number(donates[0].uid);
             const uid = 144793398;
-            const sum = Number(donates[0].sum);
+            // const sum = Number(donates[0].sum);
+            const sum = Number(40);
             const message = donates[0].msg;
             const date = donates[0].date;
 
@@ -35,7 +36,7 @@ module.exports = {
             if (!NewUser) NewUser = await utils.regDataBase(uid, group);
 
             // прекращаем обрабатывать донат, если уже обработали ранее
-            if (NewUser.lastDonate == date) return console.log(`RETURN`);
+            // if (NewUser.lastDonate == date) return console.log(`RETURN`);
 
             // получаем фото профиля:
             let photo = await utils.getPhotoWithVkid(uid, group);
